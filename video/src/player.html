@@ -47,6 +47,24 @@
                        border: 8px solid var(--gold); box-shadow: 0 0 50px rgba(242,194,48,.45); }
   #endcard .name { color: #fff; font-weight: 900; font-size: 56px; line-height: 1.1; }
   #endcard .sub { color: var(--gold2); font-weight: 600; font-size: 34px; margin-top: 6px; }
+  #fx, #flash { pointer-events: none; }
+  #flash { position: absolute; inset: 0; background: #fff; opacity: 0; }
+  #ring { left: 10px; top: 350px; width: 1000px; height: 1000px; opacity: 0; }
+  #hookArt { left: 600px; top: 470px; width: 440px; height: 440px; opacity: 0; }
+  #countdown { left: 0; top: 650px; width: 1080px; text-align: center; font-weight: 900; font-size: 360px; color: #fff; opacity: 0;
+               text-shadow: 0 0 40px #B46CFF, 0 0 90px #5EF3FF; }
+  #endcard .avatar { width: 200px; height: 200px; border-radius: 50%; overflow: hidden; flex: 0 0 200px;
+                     border: 8px solid var(--gold); box-shadow: 0 0 50px rgba(242,194,48,.45); background: #2b1d5c; }
+  body.magic { --gold: #FFD54A; --gold2: #FFE9A3; }
+  body.magic #chip { background: linear-gradient(90deg, #B46CFF, #FF5EC8); color: #fff; box-shadow: 0 0 30px rgba(180,108,255,.6); }
+  body.magic #title { text-shadow: 0 0 24px rgba(180,108,255,.9), 0 4px 0 rgba(0,0,0,.4); }
+  body.magic #progress { background: linear-gradient(90deg, #5EF3FF, #B46CFF, #FF5EC8); }
+  body.magic #caption { border-color: rgba(94,243,255,.75); background: rgba(20,12,48,.88); box-shadow: 0 0 34px rgba(124,92,255,.45); }
+  body.magic #caption::before { border-right-color: rgba(94,243,255,.85); }
+  body.magic .card { border-color: rgba(180,108,255,.8); background: linear-gradient(135deg, rgba(180,108,255,.28), rgba(94,243,255,.06)); }
+  body.magic .card .n { background: linear-gradient(180deg, #8EF7FF, #B46CFF); color: #fff; }
+  body.magic #endcard .avatar { border-color: #B46CFF; box-shadow: 0 0 50px rgba(180,108,255,.6); }
+  body.magic #label { background: rgba(180,108,255,.25); color: #E9D8FF; }
   #endcard .cta { display: inline-block; margin-top: 16px; padding: 10px 28px; border-radius: 40px; font-weight: 800; font-size: 36px;
                   background: #FE2C55; color: #fff; }
 </style>
@@ -58,20 +76,26 @@
   <img id="logoTop" class="abs" src="../assets/logo.png">
   <div id="chip" class="abs"></div>
   <div id="title" class="abs"></div>
+  <div id="ring" class="abs"></div>
+  <div id="hookArt" class="abs"></div>
   <div id="board" class="abs"></div>
+  <canvas id="fx" width="1080" height="1920"></canvas>
   <div id="label" class="abs"></div>
   <div id="recap" class="abs"></div>
   <div id="endcard" class="abs">
-    <img class="photo" src="../assets/coach-photo.png">
+    <img class="photo" src="../assets/coach-photo.png"><div class="avatar"></div>
     <div><div class="name">HLV Tùng</div><div class="sub">Chess Empire Academy</div>
-      <div class="sub">Học cờ vua – Học cách nghĩ</div><div class="cta">+ Theo dõi</div></div>
+      <div class="sub tag">Học cờ vua – Học cách nghĩ</div><div class="cta">+ Theo dõi</div></div>
   </div>
   <div id="coach" class="abs"></div>
   <img id="coachLogo" src="../assets/logo.png">
   <div id="caption" class="abs"></div>
   <div id="sticker" class="abs"></div>
+  <div id="countdown" class="abs"></div>
+  <div id="flash"></div>
 </div>
 <script src="coach.js"></script>
+<script src="mon.js"></script>
 <script>
 // ===== Tiện ích =====
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
@@ -79,7 +103,8 @@ const lerp = (a, b, k) => a + (b - a) * k;
 const ease = k => (k = clamp(k), k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
 const back = k => { k = clamp(k); const c = 1.9; return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2); };
 const $ = id => document.getElementById(id);
-const COL = { gold: '255,213,74', red: '255,77,77', green: '61,220,132' };
+const COL = { gold: '255,213,74', red: '255,77,77', green: '61,220,132', cyan: '94,243,255', purple: '180,108,255' };
+const STICKER = { green: '#1FBF6A', red: '#E5212E', purple: 'linear-gradient(90deg,#7B2FFF,#FF3DB8)', gold: '#E0A000' };
 
 let TL, PIECES;
 const BS = 900, SQ = BS / 8, FR = 0; // kích thước bàn cờ
@@ -92,7 +117,62 @@ const SPARKS = Array.from({ length: 70 }, (_, i) => {
   const r2 = Math.sin(i * 78.233) * 12543.21; const g = r2 - Math.floor(r2);
   return { x: f * 1080, y: g * 1920, s: 1.5 + (i % 5), sp: 8 + (i % 7) * 4, ph: i * 0.7 };
 });
+function drawMagicBg(t) {
+  const c = bgCtx;
+  const g = c.createRadialGradient(540, 820, 60, 540, 900, 1400);
+  g.addColorStop(0, '#3b1f78'); g.addColorStop(.4, '#1a0f3d'); g.addColorStop(1, '#07051a');
+  c.fillStyle = g; c.fillRect(0, 0, 1080, 1920);
+  // tinh vân trôi chậm
+  for (let i = 0; i < 4; i++) {
+    const x = 540 + Math.sin(t * .15 + i * 1.7) * 380, y = 400 + i * 420 + Math.cos(t * .12 + i) * 80;
+    const n = c.createRadialGradient(x, y, 0, x, y, 420);
+    n.addColorStop(0, i % 2 ? 'rgba(255,94,200,.16)' : 'rgba(94,243,255,.13)'); n.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = n; c.fillRect(0, 0, 1080, 1920);
+  }
+  for (const p of SPARKS) {
+    const y = (p.y - t * p.sp * .6 + 1920) % 1920, tw = Math.sin(t * 3 + p.ph) ** 2;
+    c.fillStyle = `rgba(${p.ph % 2 > 1 ? '255,233,163' : '200,240,255'},${.2 + .7 * tw})`;
+    const x = p.x + Math.sin(t * .5 + p.ph) * 10, r = p.s * (.6 + .6 * tw);
+    c.beginPath(); c.moveTo(x, y - r * 2.4); c.lineTo(x + r * .6, y); c.lineTo(x, y + r * 2.4); c.lineTo(x - r * .6, y); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(x - r * 2.4, y); c.lineTo(x, y + r * .6); c.lineTo(x + r * 2.4, y); c.lineTo(x, y - r * .6); c.closePath(); c.fill();
+  }
+}
+// vòng phép thuật xoay (chữ rune giả bằng nét vẽ)
+function magicRingSVG(t, glow = 1) {
+  let runes = '';
+  for (let i = 0; i < 24; i++) {
+    const a = i / 24 * Math.PI * 2, x = 500 + Math.cos(a) * 430, y = 500 + Math.sin(a) * 430;
+    runes += `<g transform="translate(${x} ${y}) rotate(${a * 180 / Math.PI + 90})"><path d="M -10 -14 L 0 14 L 10 -14 M -12 0 L 12 0" stroke="#C9A6FF" stroke-width="4" fill="none"/></g>`;
+  }
+  return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" style="filter:drop-shadow(0 0 18px rgba(180,108,255,${.8 * glow}))">
+    <g transform="rotate(${t * 12} 500 500)" fill="none" stroke="#B46CFF" stroke-width="5" opacity=".85">
+      <circle cx="500" cy="500" r="480"/><circle cx="500" cy="500" r="380" stroke-dasharray="18 14"/>${runes}</g>
+    <g transform="rotate(${-t * 20} 500 500)" fill="none" stroke="#5EF3FF" stroke-width="4" opacity=".7">
+      <polygon points="500,130 820,685 180,685"/><polygon points="500,870 180,315 820,315"/></g></svg>`;
+}
+function lightning(x1, y1, x2, y2, seed) {
+  let d = `M ${x1} ${y1}`, n = 7;
+  for (let i = 1; i < n; i++) {
+    const k = i / n, j = Math.sin(seed * 9.1 + i * 3.7) * 34;
+    d += ` L ${lerp(x1, x2, k) + j} ${lerp(y1, y2, k) + j * .4}`;
+  }
+  return d + ` L ${x2} ${y2}`;
+}
+function hookArtSVG(t) {
+  const flick = Math.sin(t * 23) > .2 ? 1 : .35;
+  const bolts = [0, 1, 2, 3].map(i => {
+    const a = i * Math.PI / 2 + .5 + Math.sin(t) * .2;
+    return `<path d="${lightning(220, 220, 220 + Math.cos(a) * 215, 220 + Math.sin(a) * 215, Math.floor(t * 8) + i)}" stroke="#E6FBFF" stroke-width="5" fill="none" opacity="${flick}"/>`;
+  }).join('');
+  const bob = Math.sin(t * 2) * 10;
+  return `<svg viewBox="0 0 440 440" width="100%" height="100%"><defs>${PIECES}
+    <radialGradient id="hg"><stop offset="0" stop-color="#8EF7FF" stop-opacity=".9"/><stop offset="1" stop-color="#7B2FFF" stop-opacity="0"/></radialGradient></defs>
+    <circle cx="220" cy="220" r="210" fill="url(#hg)"/>
+    <g style="filter:drop-shadow(0 0 12px #5EF3FF)">${bolts}</g>
+    <use href="#wR" x="90" y="${80 + bob}" width="260" height="260" style="filter:drop-shadow(0 0 26px #fff) drop-shadow(0 0 40px #B46CFF)"/></svg>`;
+}
 function drawBg(t) {
+  if (TL.theme === 'magic') return drawMagicBg(t);
   const c = bgCtx;
   const g = c.createRadialGradient(540, 760, 80, 540, 900, 1300);
   g.addColorStop(0, '#3a2a0c'); g.addColorStop(.45, '#17130b'); g.addColorStop(1, '#0a0a0c');
@@ -127,6 +207,35 @@ function arrowSVG(from, to, color, k) {
     <line x1="${x1}" y1="${y1}" x2="${bx}" y2="${by}" stroke="rgb(${COL[color]})" stroke-width="${w}" stroke-linecap="round"/>
     <polygon points="${hx},${hy} ${bx + nx * 34},${by + ny * 34} ${bx - nx * 34},${by - ny * 34}" fill="rgb(${COL[color]})"/></g>`;
 }
+function beamSVG(o, dt, layer) {
+  const [fx, fy] = sqXY(o.from).map(v => v + SQ / 2);
+  let s = '';
+  const pulse = .75 + .25 * Math.sin(dt * 9);
+  for (const r of o.rays) {
+    if (o.only && !o.only.includes(r.to) && !o.only.includes(r.block)) continue;
+    if (r.to && layer === 'line') {
+      const [tx, ty] = sqXY(r.to).map(v => v + SQ / 2), k = ease(dt / .5);
+      const ex = lerp(fx, tx, k), ey = lerp(fy, ty, k);
+      s += `<line x1="${fx}" y1="${fy}" x2="${ex}" y2="${ey}" stroke="rgba(94,243,255,${.6 * pulse})" stroke-width="56" stroke-linecap="round" filter="url(#glow)"/>
+            <line x1="${fx}" y1="${fy}" x2="${ex}" y2="${ey}" stroke="rgba(180,108,255,.85)" stroke-width="20" stroke-linecap="round"/>
+            <line x1="${fx}" y1="${fy}" x2="${ex}" y2="${ey}" stroke="#fff" stroke-width="6" stroke-linecap="round"/>`;
+    }
+    if (layer !== 'mark') continue;
+    if (r.to) {
+      if (r.hit && dt > .5) {
+        const [hx, hy] = sqXY(r.hit), q = back((dt - .5) / .3);
+        s += `<rect x="${hx + 6}" y="${hy + 6}" width="${SQ - 12}" height="${SQ - 12}" rx="14" fill="rgba(255,60,100,${.35 * pulse})" stroke="#FF5E78" stroke-width="${8 * q}"/>`;
+      }
+    }
+    if (r.block && dt > .5) {
+      const [bx, by] = sqXY(r.block), q = back((dt - .5) / .3);
+      s += `<rect x="${bx + 6}" y="${by + 6}" width="${SQ - 12}" height="${SQ - 12}" rx="14" fill="none" stroke="#E5212E" stroke-width="${8 * q}"/>
+        <g transform="translate(${bx + SQ - 18} ${by + 18}) scale(${q})"><circle r="24" fill="#E5212E" stroke="#fff" stroke-width="4"/>
+        <path d="M -10 -10 L 10 10 M 10 -10 L -10 10" stroke="#fff" stroke-width="6" stroke-linecap="round"/></g>`;
+    }
+  }
+  return s;
+}
 function boardSVG(t, scene) {
   // 1) tìm sự kiện bàn cờ cuối cùng đã bắt đầu
   const evs = TL.boardEvents; let k = -1;
@@ -146,17 +255,21 @@ function boardSVG(t, scene) {
       lastMove = ev.moving[0];
     } else { base = TL.positions[ev.pos]; lastMove = ev.moving[0]; }
   }
+  const magic = TL.theme === 'magic';
+  const LIGHT = magic ? '#E9E1FA' : '#F1E2C2', DARK = magic ? '#7A66B8' : '#B58A55';
+  const frame = magic ? ['#8EF7FF', '#7B2FFF', '#FF5EC8'] : ['#FFE38A', '#C9921A', '#FFD54A'];
   let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-14 -14 ${BS + 28} ${BS + 28}" width="100%" height="100%">
-    <defs>${PIECES}<linearGradient id="fr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE38A"/><stop offset=".5" stop-color="#C9921A"/><stop offset="1" stop-color="#FFD54A"/></linearGradient></defs>
+    <defs>${PIECES}<linearGradient id="fr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${frame[0]}"/><stop offset=".5" stop-color="${frame[1]}"/><stop offset="1" stop-color="${frame[2]}"/></linearGradient>
+    <filter id="glow" filterUnits="userSpaceOnUse" x="-60" y="-60" width="1050" height="1050"><feGaussianBlur stdDeviation="12"/></filter></defs>
     <rect x="-14" y="-14" width="${BS + 28}" height="${BS + 28}" rx="18" fill="url(#fr)"/>`;
   for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
-    s += `<rect x="${c * SQ}" y="${r * SQ}" width="${SQ}" height="${SQ}" fill="${(r + c) % 2 ? '#B58A55' : '#F1E2C2'}"/>`;
+    s += `<rect x="${c * SQ}" y="${r * SQ}" width="${SQ}" height="${SQ}" fill="${(r + c) % 2 ? DARK : LIGHT}"/>`;
   }
   for (let i = 0; i < 8; i++) {
-    s += `<text x="${i * SQ + SQ - 8}" y="${BS - 8}" font-size="20" font-weight="700" text-anchor="end" fill="${i % 2 ? '#B58A55' : '#F1E2C2'}" font-family="BVP">${'abcdefgh'[i]}</text>`;
-    s += `<text x="6" y="${i * SQ + 24}" font-size="20" font-weight="700" fill="${i % 2 ? '#F1E2C2' : '#B58A55'}" font-family="BVP">${8 - i}</text>`;
+    s += `<text x="${i * SQ + SQ - 8}" y="${BS - 8}" font-size="20" font-weight="700" text-anchor="end" fill="${i % 2 ? DARK : LIGHT}" font-family="BVP">${'abcdefgh'[i]}</text>`;
+    s += `<text x="6" y="${i * SQ + 24}" font-size="20" font-weight="700" fill="${i % 2 ? LIGHT : DARK}" font-family="BVP">${8 - i}</text>`;
   }
-  if (lastMove) for (const sq of lastMove) { const [x, y] = sqXY(sq); s += `<rect x="${x}" y="${y}" width="${SQ}" height="${SQ}" fill="rgba(255,213,74,.38)"/>`; }
+  if (lastMove) for (const sq of lastMove) { const [x, y] = sqXY(sq); s += `<rect x="${x}" y="${y}" width="${SQ}" height="${SQ}" fill="${magic ? 'rgba(94,243,255,.4)' : 'rgba(255,213,74,.38)'}"/>`; }
 
   const { active } = overlaysAt(t, scene);
   for (const o of active) if (o.type === 'highlight') {
@@ -164,6 +277,7 @@ function boardSVG(t, scene) {
     for (const sq of o.squares) { const [x, y] = sqXY(sq);
       s += `<rect x="${x + 4}" y="${y + 4}" width="${SQ - 8}" height="${SQ - 8}" rx="10" fill="rgba(${COL[o.color]},${pulse * k})" stroke="rgba(${COL[o.color]},${k})" stroke-width="6"/>`; }
   }
+  for (const o of active) if (o.type === 'beam') s += beamSVG(o, t - o.t, 'line');
   // quân cờ
   for (const [sq, sym] of Object.entries(base)) {
     if (sq === '__cap') continue;
@@ -173,16 +287,24 @@ function boardSVG(t, scene) {
   }
   for (const m of moving) {
     const [x1, y1] = sqXY(m.f), [x2, y2] = sqXY(m.to);
+    if (magic) {
+      const cx = lerp(x1, x2, m.p) + SQ / 2, cy = lerp(y1, y2, m.p) + SQ / 2;
+      s += `<line x1="${x1 + SQ / 2}" y1="${y1 + SQ / 2}" x2="${cx}" y2="${cy}" stroke="rgba(94,243,255,.55)" stroke-width="60" stroke-linecap="round" filter="url(#glow)"/>
+            <line x1="${lerp(x1, x2, m.p * .4) + SQ / 2}" y1="${lerp(y1, y2, m.p * .4) + SQ / 2}" x2="${cx}" y2="${cy}" stroke="#fff" stroke-width="10" stroke-linecap="round"/>`;
+    }
     const lift = Math.sin(m.p * Math.PI) * 1.12;
     const sc = 1 + lift * .12, x = lerp(x1, x2, m.p), y = lerp(y1, y2, m.p) - lift * 18;
     s += `<g transform="translate(${x + SQ / 2} ${y + SQ / 2}) scale(${sc}) translate(${-SQ / 2} ${-SQ / 2})" filter="drop-shadow(0 10px 8px rgba(0,0,0,.35))">${pieceUse(m.sym, 0, 0)}</g>`;
   }
   for (const o of active) {
+    if (o.type === 'beam') s += beamSVG(o, t - o.t, 'mark');
     if (o.type === 'arrow') s += arrowSVG(o.from, o.to, o.color, (t - o.t) / .45);
     if (o.type === 'dots') o.squares.forEach((sq, i) => {
       const k = back((t - o.t - i * .09) / .3); if (k <= 0) return;
       const [x, y] = sqXY(sq);
-      s += `<circle cx="${x + SQ / 2}" cy="${y + SQ / 2}" r="${22 * k}" fill="rgba(61,220,132,.9)" stroke="#fff" stroke-width="4"/>`;
+      const cap = (o.captures || []).includes(sq), col = magic ? (cap ? '255,94,120' : '94,243,255') : '61,220,132';
+      s += cap ? `<circle cx="${x + SQ / 2}" cy="${y + SQ / 2}" r="${48 * k}" fill="none" stroke="rgb(${col})" stroke-width="9"/>`
+               : `<circle cx="${x + SQ / 2}" cy="${y + SQ / 2}" r="${22 * k}" fill="rgba(${col},.9)" stroke="#fff" stroke-width="4"/>`;
     });
     if (o.type === 'shield') {
       const k = back((t - o.t) / .4), [x, y] = sqXY(o.square);
@@ -238,7 +360,7 @@ function renderAt(t) {
   // sticker
   const st = active.filter(o => o.type === 'sticker').pop();
   if (st) {
-    const k = back((t - st.t) / .35), color = st.color === 'green' ? '#1FBF6A' : '#E5212E';
+    const k = back((t - st.t) / .35), color = STICKER[st.color] || STICKER.red;
     $('sticker').innerHTML = `<span style="background:${color};transform:rotate(-6deg) scale(${k})">${st.text}</span>`;
     $('sticker').style.top = isHook ? '1390px' : '760px';
     $('sticker').style.opacity = clamp((t - st.t) / .15);
@@ -259,7 +381,8 @@ function renderAt(t) {
   $('endcard').style.transform = `translateY(${(1 - clamp(ek)) * 80}px)`;
 
   // nhân vật: phóng to ở cảnh mở đầu, thu về góc khi vào bài
-  const big = { x: 190, y: 640, w: 700 }, small = { x: 24, y: 1356, w: 340 };
+  const isMon = TL.character === 'mon';
+  const big = isMon ? { x: 70, y: 760, w: 640 } : { x: 190, y: 640, w: 700 }, small = { x: 24, y: 1356, w: 340 };
   const m = isHook ? 0 : ease((t - boardScene.t0) / .7);
   const w = lerp(big.w, small.w, m), x = lerp(big.x, small.x, m);
   const bob = Math.sin(t * 2.2) * 6 * (w / 340);
@@ -268,9 +391,15 @@ function renderAt(t) {
   const ph = t % 3.7, blink = ph < .12 ? Math.sin(ph / .12 * Math.PI) : 0;
   const talking = TL.mouth[frame] || 0;
   const recentSticker = TL.overlays.some(o => o.type === 'sticker' && t - o.t > 0 && t - o.t < .9);
-  $('coach').innerHTML = coachSVG({ mouth: talking, blink, brow: recentSticker ? .9 : talking * .25, tilt: Math.sin(t * 1.3) * 2.5, logo: null });
+  const wave = Math.max(0, ...TL.overlays.filter(o => ['magic', 'boom', 'flash', 'beam'].includes(o.type) && t >= o.t && t - o.t < 1.6)
+    .map(o => Math.min(ease((t - o.t) / .3), 1 - ease((t - o.t - 1.2) / .4))));
+  const charFn = isMon ? monSVG : coachSVG;
+  $('coach').innerHTML = charFn({ mouth: talking, blink, brow: recentSticker ? .9 : talking * .25, tilt: Math.sin(t * 1.3) * (isMon ? 4 : 2.5), wave, logo: null });
+  $('coachLogo').style.display = isMon ? 'none' : '';
   const ls = $('coachLogo').style, u = w / 400;
   ls.left = (x + 268 * u) + 'px'; ls.top = (y + 440 * u) + 'px'; ls.width = (36 * u) + 'px';
+
+  if (TL.theme === 'magic') magicFX(t, scene, isHook, bIn * (1 - bOut), x, y, w);
 
   // phụ đề
   const cap = TL.captions.filter(c => c.t0 <= t + .05).pop();
@@ -286,7 +415,63 @@ function renderAt(t) {
   } else capEl.style.opacity = 0;
 }
 
-window.setup = (timeline, pieces) => { TL = timeline; PIECES = pieces; };
+// ===== Hiệu ứng phép thuật =====
+const fxCtx = $('fx').getContext('2d');
+function burst(c, cx, cy, dt, seed, color) {
+  // vụ nổ: vòng sóng + tia lửa, xác định theo thời gian
+  if (dt < 0 || dt > 1.1) return;
+  const k = dt / 1.1;
+  c.strokeStyle = `rgba(${color},${1 - k})`; c.lineWidth = 18 * (1 - k);
+  c.beginPath(); c.arc(cx, cy, 30 + k * 300, 0, 7); c.stroke();
+  for (let i = 0; i < 26; i++) {
+    const a = i / 26 * 6.283 + seed, sp = 260 + (Math.sin(i * 7.3 + seed) * .5 + .5) * 380;
+    const px = cx + Math.cos(a) * sp * k, py = cy + Math.sin(a) * sp * k + 160 * k * k;
+    c.fillStyle = i % 3 ? `rgba(255,233,163,${1 - k})` : `rgba(${color},${1 - k})`;
+    c.beginPath(); c.arc(px, py, 10 * (1 - k) + 2, 0, 7); c.fill();
+  }
+}
+function magicFX(t, scene, isHook, boardVis, cx, cy, cw) {
+  const c = fxCtx; c.clearRect(0, 0, 1080, 1920);
+  $('ring').style.opacity = boardVis * .55; $('ring').innerHTML = boardVis > 0 ? magicRingSVG(t) : '';
+  const hk = isHook ? clamp((t - scene.t0) / .5) : 0;
+  $('hookArt').style.opacity = hk; $('hookArt').innerHTML = hk > 0 ? hookArtSVG(t) : '';
+  $('hookArt').style.transform = `scale(${.6 + .4 * back(hk)})`;
+  let shake = 0, flash = 0;
+  for (const o of TL.overlays) {
+    const dt = t - o.t;
+    if (o.type === 'boom') {
+      const [sx, sy] = sqXY(o.square);
+      burst(c, 60 + 14 * 900 / 928 + (sx + SQ / 2) * 900 / 928, 400 + (sy + SQ / 2 + 14) * 900 / 928, dt, 1.3, '255,94,120');
+      if (dt >= 0 && dt < .45) { shake = Math.max(shake, 22 * (1 - dt / .45)); flash = Math.max(flash, .55 * (1 - dt / .25)); }
+    }
+    if (o.type === 'flash' && dt >= 0 && dt < .5) { shake = Math.max(shake, 26 * (1 - dt / .5)); flash = Math.max(flash, .9 * (1 - dt / .3)); }
+    if (o.type === 'magic') burst(c, cx + cw * .84, cy + cw * .55, dt, .4, '94,243,255');
+    if (o.type === 'sticker' && scene.layout === 'hook') burst(c, 540, 1460, dt, 2.1, '180,108,255');
+  }
+  // đếm ngược
+  const cd = TL.overlays.filter(o => o.type === 'countdown' && t >= o.t && t - o.t < .9).pop();
+  if (cd) {
+    const dt = t - cd.t;
+    $('countdown').textContent = cd.n; $('countdown').style.opacity = 1 - clamp((dt - .55) / .35);
+    $('countdown').style.transform = `scale(${1.6 - .6 * back(dt / .3)})`;
+  } else $('countdown').style.opacity = 0;
+  $('flash').style.opacity = clamp(flash);
+  $('stage').style.transform = shake ? `translate(${Math.sin(t * 91) * shake}px, ${Math.cos(t * 77) * shake}px)` : '';
+}
+
+window.setup = (timeline, pieces) => {
+  TL = timeline; PIECES = pieces;
+  document.body.classList.toggle('magic', TL.theme === 'magic');
+  const ec = TL.endcard || {};
+  const isMon = TL.character === 'mon';
+  document.querySelector('#endcard .photo').style.display = isMon ? 'none' : '';
+  document.querySelector('#endcard .avatar').style.display = isMon ? '' : 'none';
+  if (isMon) document.querySelector('#endcard .avatar').innerHTML =
+    `<div style="width:200px;height:260px;margin-top:-8px">${monSVG({ mouth: .4 })}</div>`;
+  if (ec.name) document.querySelector('#endcard .name').textContent = ec.name;
+  if (ec.sub) document.querySelector('#endcard .sub').textContent = ec.sub;
+  if (ec.tagline) document.querySelector('#endcard .tag').textContent = ec.tagline;
+};
 </script>
 <style> #caption.nobubble::before { display: none; } </style>
 </body>

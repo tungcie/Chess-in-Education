@@ -7,6 +7,7 @@ Bàn cờ luôn đúng luật vì mọi nước đi được `python-chess` ki�
 video/
   assets/            logo, ảnh HLV, quân cờ (cburnett), font Be Vietnam Pro
   src/coach.js       nhân vật hoạt hình HLV Tùng (SVG, nhép miệng theo giọng đọc)
+  src/mon.js         nhân vật bé Mon (em bé cầm con Xe)
   src/player.html    bố cục + hiệu ứng: vẽ khung hình tại thời điểm t
   tools/build.py     kịch bản → giọng đọc, thế cờ, mốc thời gian, âm thanh
   tools/render.js    timeline → MP4 1080×1920 (Playwright + ffmpeg)
@@ -25,6 +26,18 @@ node tools/render.js episodes/01-khai-cuoc      # xuất build/video.mp4 (~2,5 p
 
 ## Viết kịch bản (`script.json`)
 
+Thiết lập chung ở đầu file:
+
+| Trường | Ví dụ | Ý nghĩa |
+|---|---|---|
+| `character` | `coach` / `mon` | Nhân vật dẫn |
+| `theme` | `gold` / `magic` | Phong cách: vàng sang trọng hoặc phép thuật (tia sáng, nổ, chớp, rung màn hình) |
+| `music` | `calm` / `magic` | Nhạc nền tự tổng hợp |
+| `voice`, `rate`, `pitch`, `formant` | `vi-VN-HoaiMyNeural`, `-2%`, `+30Hz`, `1.15` | Giọng đọc; `formant` > 1 làm giọng nghe như trẻ con |
+| `endcard` | `{ "name": "Bé Mon", ... }` | Chữ ở màn kết |
+
+Mỗi cảnh có thể đặt thế cờ ban đầu bằng `"board": { "fen": "..." }` (hoặc `{ "reset": true }` cho thế khai cuộc).
+
 Mỗi cảnh có `header` (chip + tiêu đề) và danh sách `phrases`. Mỗi câu thoại gồm:
 
 - `text`: chữ hiện trên phụ đề; `say` (tuỳ chọn): cách đọc cho TTS, ví dụ `e4` → `e bốn`.
@@ -41,6 +54,11 @@ Mỗi cảnh có `header` (chip + tiêu đề) và danh sách `phrases`. Mỗi c
 | `shield` | `square` | Biểu tượng khiên “an toàn” |
 | `sticker` | `text`, `color` | Tem chữ lớn |
 | `label` | `text` | Nhãn nhỏ dưới bàn cờ |
+| `beam` | `from`, `only[]` (tuỳ chọn) | Tia phép thuật theo đường đi của Xe; tự đánh dấu quân chặn (✗) và quân ăn được |
+| `fen` | `fen` | Đổi thế cờ giữa chừng |
+| `flash` / `magic` | – | Chớp sáng + rung màn hình / tia lửa quanh tay nhân vật (chỉ `theme: magic`) |
+| `countdown` | `n` | Số đếm ngược lớn giữa màn hình |
+| `move` + `"boom": true` | | Nổ tung khi ăn quân |
 | `clear` | – | Xoá tô ô / mũi tên / tem trong cảnh |
 | `recap`, `endcard` | `index` | Thẻ tóm tắt và màn kết (cảnh `layout: "outro"`) |
 
