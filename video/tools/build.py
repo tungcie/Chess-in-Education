@@ -238,9 +238,12 @@ def main(ep_dir):
                     if o["type"] == "dots":
                         sq = chess.parse_square(o["from"])
                         me = board.piece_at(sq).color
-                        targets = [s for s in board.attacks(sq) if not (board.piece_at(s) and board.piece_at(s).color == me)]
+                        # mode "attacks": mọi ô quân đó kiểm soát; "moves": chỉ ô đi được (bỏ ô có quân mình)
+                        targets = [s for s in board.attacks(sq)
+                                   if o.get("mode") != "moves" or not (board.piece_at(s) and board.piece_at(s).color == me)]
                         o["squares"] = [chess.square_name(s) for s in targets]
-                        o["captures"] = [chess.square_name(s) for s in targets if board.piece_at(s)]
+                        o["captures"] = [chess.square_name(s) for s in targets
+                                         if board.piece_at(s) and board.piece_at(s).color != me]
                     if o["type"] == "beam":
                         o["rays"] = rays(o["from"], [(1, 0), (-1, 0), (0, 1), (0, -1)])
                     o["t"] = round(et, 3)

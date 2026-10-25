@@ -50,7 +50,7 @@ Mỗi cảnh có `header` (chip + tiêu đề) và danh sách `phrases`. Mỗi c
 | `line` | `san[]`, `step`, `reset` | Tua nhanh cả chuỗi nước |
 | `highlight` | `squares[]`, `color` (gold/red/green) | Tô ô |
 | `arrow` | `from`, `to`, `color` | Mũi tên |
-| `dots` | `from` | Chấm các ô mà quân ở `from` kiểm soát (tự tính) |
+| `dots` | `from`, `mode` (`attacks`/`moves`) | Chấm các ô quân ở `from` kiểm soát, hoặc chỉ các ô đi được (tự tính) |
 | `shield` | `square` | Biểu tượng khiên “an toàn” |
 | `sticker` | `text`, `color` | Tem chữ lớn |
 | `label` | `text` | Nhãn nhỏ dưới bàn cờ |
