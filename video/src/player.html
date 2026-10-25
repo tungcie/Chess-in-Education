@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Chess Empire – video player</title>
+<style>
+  @font-face { font-family: BVP; font-weight: 500; src: url(../assets/fonts/BeVietnamPro-Medium.ttf); }
+  @font-face { font-family: BVP; font-weight: 600; src: url(../assets/fonts/BeVietnamPro-SemiBold.ttf); }
+  @font-face { font-family: BVP; font-weight: 700; src: url(../assets/fonts/BeVietnamPro-Bold.ttf); }
+  @font-face { font-family: BVP; font-weight: 800; src: url(../assets/fonts/BeVietnamPro-ExtraBold.ttf); }
+  @font-face { font-family: BVP; font-weight: 900; src: url(../assets/fonts/BeVietnamPro-Black.ttf); }
+  :root { --gold: #F2C230; --gold2: #FFE38A; --goldDeep: #B8861B; --ink: #0D0D10; }
+  html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: var(--ink); font-family: BVP, sans-serif; }
+  #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+  #bg, #fx { position: absolute; inset: 0; }
+  .abs { position: absolute; }
+  #progress { left: 0; top: 0; height: 10px; background: linear-gradient(90deg, var(--goldDeep), var(--gold2)); }
+  #chip { left: 60px; top: 200px; padding: 10px 26px; border-radius: 40px; font-weight: 800; font-size: 34px; letter-spacing: 3px;
+          color: var(--ink); background: linear-gradient(180deg, var(--gold2), var(--gold)); box-shadow: 0 6px 24px rgba(242,194,48,.35); }
+  #title { left: 60px; top: 272px; width: 900px; font-weight: 900; font-size: 74px; line-height: 1.08; color: #fff;
+           text-shadow: 0 4px 0 rgba(0,0,0,.35); white-space: pre-line; }
+  #title b { color: var(--gold); }
+  #logoTop { right: 130px; top: 190px; height: 130px; }
+  #board { left: 60px; top: 400px; width: 900px; height: 900px; }
+  #coach { width: 340px; height: 442px; }
+  #coachLogo { position: absolute; }
+  #caption { left: 380px; top: 1340px; width: 580px; min-height: 120px; padding: 26px 30px; box-sizing: border-box;
+             border-radius: 32px; background: rgba(16,16,20,.88); border: 3px solid rgba(242,194,48,.65);
+             color: #fff; font-weight: 700; font-size: 44px; line-height: 1.28; box-shadow: 0 14px 40px rgba(0,0,0,.45); }
+  #caption .k { color: var(--gold); }
+  #caption::before { content: ""; position: absolute; left: -22px; top: 54px; border: 14px solid transparent;
+                     border-right: 22px solid rgba(242,194,48,.75); border-left: 0; }
+  #label { left: 60px; top: 1316px; padding: 8px 20px; border-radius: 14px; background: rgba(255,255,255,.1);
+           color: var(--gold2); font-weight: 700; font-size: 32px; }
+  #sticker { left: 0; width: 1080px; text-align: center; pointer-events: none; }
+  #sticker span { display: inline-block; padding: 18px 40px; border-radius: 22px; font-weight: 900; font-size: 92px;
+                  color: #fff; border: 8px solid #fff; box-shadow: 0 18px 40px rgba(0,0,0,.5); }
+  #recap { left: 60px; top: 400px; width: 900px; }
+  .card { display: flex; align-items: center; gap: 30px; margin-bottom: 26px; padding: 24px 34px; border-radius: 30px;
+          background: linear-gradient(135deg, rgba(242,194,48,.18), rgba(255,255,255,.04)); border: 3px solid rgba(242,194,48,.55); }
+  .card .n { flex: 0 0 110px; height: 110px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 64px;
+             color: var(--ink); background: linear-gradient(180deg, var(--gold2), var(--gold)); }
+  .card .t { color: #fff; font-weight: 800; font-size: 54px; line-height: 1.15; white-space: pre-line; }
+  .card .t small { display: block; font-size: 34px; font-weight: 600; color: var(--gold2); }
+  #endcard { left: 60px; top: 1000px; width: 900px; display: flex; align-items: center; gap: 34px; }
+  #endcard img.photo { width: 200px; height: 200px; border-radius: 50%; object-fit: cover; object-position: 50% 12%;
+                       border: 8px solid var(--gold); box-shadow: 0 0 50px rgba(242,194,48,.45); }
+  #endcard .name { color: #fff; font-weight: 900; font-size: 56px; line-height: 1.1; }
+  #endcard .sub { color: var(--gold2); font-weight: 600; font-size: 34px; margin-top: 6px; }
+  #endcard .cta { display: inline-block; margin-top: 16px; padding: 10px 28px; border-radius: 40px; font-weight: 800; font-size: 36px;
+                  background: #FE2C55; color: #fff; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="bg" width="1080" height="1920"></canvas>
+  <div id="progress" class="abs"></div>
+  <img id="logoTop" class="abs" src="../assets/logo.png">
+  <div id="chip" class="abs"></div>
+  <div id="title" class="abs"></div>
+  <div id="board" class="abs"></div>
+  <div id="label" class="abs"></div>
+  <div id="recap" class="abs"></div>
+  <div id="endcard" class="abs">
+    <img class="photo" src="../assets/coach-photo.png">
+    <div><div class="name">HLV Tùng</div><div class="sub">Chess Empire Academy</div>
+      <div class="sub">Học cờ vua – Học cách nghĩ</div><div class="cta">+ Theo dõi</div></div>
+  </div>
+  <div id="coach" class="abs"></div>
+  <img id="coachLogo" src="../assets/logo.png">
+  <div id="caption" class="abs"></div>
+  <div id="sticker" class="abs"></div>
+</div>
+<script src="coach.js"></script>
+<script>
+// ===== Tiện ích =====
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const ease = k => (k = clamp(k), k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+const back = k => { k = clamp(k); const c = 1.9; return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2); };
+const $ = id => document.getElementById(id);
+const COL = { gold: '255,213,74', red: '255,77,77', green: '61,220,132' };
+
+let TL, PIECES;
+const BS = 900, SQ = BS / 8, FR = 0; // kích thước bàn cờ
+const sqXY = s => [(s.charCodeAt(0) - 97) * SQ, (8 - +s[1]) * SQ];
+
+// ===== Nền: ánh vàng + hạt lấp lánh (xác định, không ngẫu nhiên theo khung) =====
+const bgCtx = $('bg').getContext('2d');
+const SPARKS = Array.from({ length: 70 }, (_, i) => {
+  const r = Math.sin(i * 12.9898) * 43758.5453; const f = r - Math.floor(r);
+  const r2 = Math.sin(i * 78.233) * 12543.21; const g = r2 - Math.floor(r2);
+  return { x: f * 1080, y: g * 1920, s: 1.5 + (i % 5), sp: 8 + (i % 7) * 4, ph: i * 0.7 };
+});
+function drawBg(t) {
+  const c = bgCtx;
+  const g = c.createRadialGradient(540, 760, 80, 540, 900, 1300);
+  g.addColorStop(0, '#3a2a0c'); g.addColorStop(.45, '#17130b'); g.addColorStop(1, '#0a0a0c');
+  c.fillStyle = g; c.fillRect(0, 0, 1080, 1920);
+  for (const p of SPARKS) {
+    const y = (p.y - t * p.sp + 1920) % 1920;
+    const a = .25 + .35 * Math.sin(t * 2 + p.ph) ** 2;
+    c.fillStyle = `rgba(255,214,110,${a})`;
+    c.beginPath(); c.arc(p.x + Math.sin(t * .6 + p.ph) * 14, y, p.s, 0, 7); c.fill();
+  }
+}
+
+// ===== Bàn cờ =====
+function pieceUse(sym, x, y, extra = '') {
+  const id = (sym === sym.toUpperCase() ? 'w' : 'b') + sym.toUpperCase();
+  return `<use href="#${id}" x="${x}" y="${y}" width="${SQ}" height="${SQ}" ${extra}/>`;
+}
+function overlaysAt(t, scene) {
+  // các sự kiện hiển thị đang có hiệu lực trong cảnh hiện tại (sau lệnh "clear" gần nhất)
+  const evs = TL.overlays.filter(o => o.t <= t && o.t >= scene.t0 && o.t < scene.t1);
+  let lastClear = -1;
+  evs.forEach((o, i) => { if (o.type === 'clear') lastClear = i; });
+  return { active: evs.slice(lastClear + 1), all: evs };
+}
+function arrowSVG(from, to, color, k) {
+  const [x1, y1] = sqXY(from).map(v => v + SQ / 2), [x2, y2] = sqXY(to).map(v => v + SQ / 2);
+  const L = Math.hypot(x2 - x1, y2 - y1), ux = (x2 - x1) / L, uy = (y2 - y1) / L;
+  const len = (L - SQ * .32) * ease(k), hx = x1 + ux * len, hy = y1 + uy * len;
+  const w = 26, head = 50, nx = -uy, ny = ux;
+  const bx = hx - ux * head, by = hy - uy * head;
+  return `<g opacity="${clamp(k * 3) * .88}">
+    <line x1="${x1}" y1="${y1}" x2="${bx}" y2="${by}" stroke="rgb(${COL[color]})" stroke-width="${w}" stroke-linecap="round"/>
+    <polygon points="${hx},${hy} ${bx + nx * 34},${by + ny * 34} ${bx - nx * 34},${by - ny * 34}" fill="rgb(${COL[color]})"/></g>`;
+}
+function boardSVG(t, scene) {
+  // 1) tìm sự kiện bàn cờ cuối cùng đã bắt đầu
+  const evs = TL.boardEvents; let k = -1;
+  for (let i = 0; i < evs.length; i++) if (evs[i].t <= t) k = i;
+  let base, moving = [], fadeIn = 1, lastMove = null;
+  if (k < 0) base = TL.positions[0];
+  else {
+    const ev = evs[k], p = clamp((t - ev.t) / ev.dur);
+    if (ev.kind === 'reset') { base = TL.positions[ev.pos]; fadeIn = ease(p); }
+    else if (p < 1) {
+      base = { ...TL.positions[ev.pos - 1] };
+      for (const [f, to] of ev.moving) {
+        const sym = base[f]; delete base[f];
+        moving.push({ sym, f, to, p: ease(p) });
+      }
+      if (ev.capture) { /* quân bị ăn mờ dần */ base.__cap = { sq: ev.moving[0][1], a: 1 - p }; }
+      lastMove = ev.moving[0];
+    } else { base = TL.positions[ev.pos]; lastMove = ev.moving[0]; }
+  }
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-14 -14 ${BS + 28} ${BS + 28}" width="100%" height="100%">
+    <defs>${PIECES}<linearGradient id="fr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE38A"/><stop offset=".5" stop-color="#C9921A"/><stop offset="1" stop-color="#FFD54A"/></linearGradient></defs>
+    <rect x="-14" y="-14" width="${BS + 28}" height="${BS + 28}" rx="18" fill="url(#fr)"/>`;
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+    s += `<rect x="${c * SQ}" y="${r * SQ}" width="${SQ}" height="${SQ}" fill="${(r + c) % 2 ? '#B58A55' : '#F1E2C2'}"/>`;
+  }
+  for (let i = 0; i < 8; i++) {
+    s += `<text x="${i * SQ + SQ - 8}" y="${BS - 8}" font-size="20" font-weight="700" text-anchor="end" fill="${i % 2 ? '#B58A55' : '#F1E2C2'}" font-family="BVP">${'abcdefgh'[i]}</text>`;
+    s += `<text x="6" y="${i * SQ + 24}" font-size="20" font-weight="700" fill="${i % 2 ? '#F1E2C2' : '#B58A55'}" font-family="BVP">${8 - i}</text>`;
+  }
+  if (lastMove) for (const sq of lastMove) { const [x, y] = sqXY(sq); s += `<rect x="${x}" y="${y}" width="${SQ}" height="${SQ}" fill="rgba(255,213,74,.38)"/>`; }
+
+  const { active } = overlaysAt(t, scene);
+  for (const o of active) if (o.type === 'highlight') {
+    const k = clamp((t - o.t) / .35), pulse = .5 + .12 * Math.sin((t - o.t) * 5);
+    for (const sq of o.squares) { const [x, y] = sqXY(sq);
+      s += `<rect x="${x + 4}" y="${y + 4}" width="${SQ - 8}" height="${SQ - 8}" rx="10" fill="rgba(${COL[o.color]},${pulse * k})" stroke="rgba(${COL[o.color]},${k})" stroke-width="6"/>`; }
+  }
+  // quân cờ
+  for (const [sq, sym] of Object.entries(base)) {
+    if (sq === '__cap') continue;
+    const [x, y] = sqXY(sq);
+    const capA = base.__cap && base.__cap.sq === sq ? base.__cap.a : 1;
+    s += pieceUse(sym, x, y, `opacity="${fadeIn * capA}"`);
+  }
+  for (const m of moving) {
+    const [x1, y1] = sqXY(m.f), [x2, y2] = sqXY(m.to);
+    const lift = Math.sin(m.p * Math.PI) * 1.12;
+    const sc = 1 + lift * .12, x = lerp(x1, x2, m.p), y = lerp(y1, y2, m.p) - lift * 18;
+    s += `<g transform="translate(${x + SQ / 2} ${y + SQ / 2}) scale(${sc}) translate(${-SQ / 2} ${-SQ / 2})" filter="drop-shadow(0 10px 8px rgba(0,0,0,.35))">${pieceUse(m.sym, 0, 0)}</g>`;
+  }
+  for (const o of active) {
+    if (o.type === 'arrow') s += arrowSVG(o.from, o.to, o.color, (t - o.t) / .45);
+    if (o.type === 'dots') o.squares.forEach((sq, i) => {
+      const k = back((t - o.t - i * .09) / .3); if (k <= 0) return;
+      const [x, y] = sqXY(sq);
+      s += `<circle cx="${x + SQ / 2}" cy="${y + SQ / 2}" r="${22 * k}" fill="rgba(61,220,132,.9)" stroke="#fff" stroke-width="4"/>`;
+    });
+    if (o.type === 'shield') {
+      const k = back((t - o.t) / .4), [x, y] = sqXY(o.square);
+      s += `<g transform="translate(${x + SQ * .78} ${y + SQ * .95}) scale(${k * 1.25})">
+        <path d="M0 -30 L26 -20 Q26 14 0 30 Q-26 14 -26 -20 Z" fill="#3DDC84" stroke="#fff" stroke-width="5"/>
+        <path d="M-11 0 L-3 9 L13 -10" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>`;
+    }
+  }
+  return s + '</svg>';
+}
+
+// ===== Phụ đề: tô vàng tên ô cờ và tên quân =====
+function captionHTML(text) {
+  return text.replace(/\b([a-h][1-8])\b|(Mã|Tượng|Hậu|Vua|Xe|tốt|nhập thành|Kramnik|Kasparov|Berlin)/g, m => `<span class="k">${m}</span>`);
+}
+
+// ===== Khung hình tại thời điểm t =====
+function renderAt(t) {
+  const frame = Math.min(TL.mouth.length - 1, Math.floor(t * TL.fps));
+  const scene = TL.scenes.find(s => t >= s.t0 && t < s.t1) || TL.scenes[TL.scenes.length - 1];
+  const si = TL.scenes.indexOf(scene);
+  drawBg(t);
+  $('progress').style.width = (t / TL.duration * 1080) + 'px';
+
+  // tiêu đề
+  const hk = clamp((t - scene.t0) / .45);
+  $('chip').textContent = scene.header.chip || '';
+  $('chip').style.opacity = hk; $('chip').style.transform = `translateX(${(1 - ease(hk)) * -60}px)`;
+  const isHook = scene.layout === 'hook', isOutro = scene.layout === 'outro';
+  $('title').textContent = scene.header.title || '';
+  $('title').style.opacity = hk;
+  $('title').style.transform = `translateY(${(1 - ease(hk)) * 30}px)`;
+  $('title').style.fontSize = isHook ? '80px' : '68px';
+  $('title').style.width = isHook ? '980px' : '820px';
+  $('title').style.color = isHook ? 'var(--gold)' : '#fff';
+  $('logoTop').style.opacity = isHook ? 0 : .95;
+
+  // bàn cờ
+  const boardScene = TL.scenes.find(s => s.layout === 'board' || !s.layout);
+  const bIn = ease((t - boardScene.t0) / .6);
+  const outroScene = TL.scenes.find(s => s.layout === 'outro');
+  const bOut = outroScene ? ease((t - outroScene.t0) / .5) : 0;
+  $('board').style.opacity = isHook ? 0 : bIn * (1 - bOut);
+  $('board').style.transform = `scale(${lerp(.92, 1, bIn)})`;
+  if (!isHook && bOut < 1) $('board').innerHTML = boardSVG(t, scene);
+
+  // nhãn
+  const { all, active } = overlaysAt(t, scene);
+  const lab = all.filter(o => o.type === 'label').pop();
+  $('label').style.opacity = lab ? clamp((t - lab.t) / .3) : 0;
+  if (lab) $('label').textContent = lab.text;
+
+  // sticker
+  const st = active.filter(o => o.type === 'sticker').pop();
+  if (st) {
+    const k = back((t - st.t) / .35), color = st.color === 'green' ? '#1FBF6A' : '#E5212E';
+    $('sticker').innerHTML = `<span style="background:${color};transform:rotate(-6deg) scale(${k})">${st.text}</span>`;
+    $('sticker').style.top = isHook ? '1390px' : '760px';
+    $('sticker').style.opacity = clamp((t - st.t) / .15);
+  } else $('sticker').style.opacity = 0;
+
+  // tóm tắt + endcard
+  $('recap').innerHTML = TL.recap.map((r, i) => {
+    const ev = all.find(o => o.type === 'recap' && o.index === i);
+    const k = ev ? back((t - ev.t) / .4) : 0;
+    const [main, sub] = r.split('\n');
+    return `<div class="card" style="opacity:${clamp(k)};transform:translateX(${(1 - clamp(k)) * 120}px) scale(${.9 + .1 * k})">
+      <div class="n">${i + 1}</div><div class="t">${main}${sub ? `<small>${sub}</small>` : ''}</div></div>`;
+  }).join('');
+  $('recap').style.opacity = isOutro ? 1 : 0;
+  const end = all.find(o => o.type === 'endcard');
+  const ek = end ? back((t - end.t) / .5) : 0;
+  $('endcard').style.opacity = clamp(ek);
+  $('endcard').style.transform = `translateY(${(1 - clamp(ek)) * 80}px)`;
+
+  // nhân vật: phóng to ở cảnh mở đầu, thu về góc khi vào bài
+  const big = { x: 190, y: 640, w: 700 }, small = { x: 24, y: 1356, w: 340 };
+  const m = isHook ? 0 : ease((t - boardScene.t0) / .7);
+  const w = lerp(big.w, small.w, m), x = lerp(big.x, small.x, m);
+  const bob = Math.sin(t * 2.2) * 6 * (w / 340);
+  const y = lerp(big.y, small.y, m) + bob;
+  const cs = $('coach').style; cs.left = x + 'px'; cs.top = y + 'px'; cs.width = w + 'px'; cs.height = (w * 1.3) + 'px';
+  const ph = t % 3.7, blink = ph < .12 ? Math.sin(ph / .12 * Math.PI) : 0;
+  const talking = TL.mouth[frame] || 0;
+  const recentSticker = TL.overlays.some(o => o.type === 'sticker' && t - o.t > 0 && t - o.t < .9);
+  $('coach').innerHTML = coachSVG({ mouth: talking, blink, brow: recentSticker ? .9 : talking * .25, tilt: Math.sin(t * 1.3) * 2.5, logo: null });
+  const ls = $('coachLogo').style, u = w / 400;
+  ls.left = (x + 268 * u) + 'px'; ls.top = (y + 440 * u) + 'px'; ls.width = (36 * u) + 'px';
+
+  // phụ đề
+  const cap = TL.captions.filter(c => c.t0 <= t + .05).pop();
+  const capEl = $('caption');
+  if (cap && t < cap.t1 + .9) {
+    const k = clamp((t - cap.t0) / .25);
+    capEl.innerHTML = captionHTML(cap.text);
+    capEl.style.opacity = k;
+    capEl.style.transform = `translateY(${(1 - ease(k)) * 24}px)`;
+    if (isHook) { capEl.style.left = '90px'; capEl.style.top = '1600px'; capEl.style.width = '900px'; capEl.style.textAlign = 'center'; capEl.style.fontSize = '50px'; }
+    else { capEl.style.left = '380px'; capEl.style.top = '1340px'; capEl.style.width = '580px'; capEl.style.textAlign = 'left'; capEl.style.fontSize = '44px'; }
+    capEl.classList.toggle('nobubble', isHook);
+  } else capEl.style.opacity = 0;
+}
+
+window.setup = (timeline, pieces) => { TL = timeline; PIECES = pieces; };
+</script>
+<style> #caption.nobubble::before { display: none; } </style>
+</body>
+</html>

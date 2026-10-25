@@ -1,0 +1,393 @@
+{
+  "title": "3 nguyên tắc vàng khi khai cuộc",
+  "voice": "vi-VN-NamMinhNeural",
+  "rate": "+8%",
+  "gap": 0.18,
+  "scenes": [
+    {
+      "id": "hook",
+      "header": {
+        "chip": "CHESS EMPIRE",
+        "title": "3 NGUYÊN TẮC VÀNG\nKHI KHAI CUỘC"
+      },
+      "layout": "hook",
+      "phrases": [
+        {
+          "text": "3 nguyên tắc vàng khi khai cuộc.",
+          "say": "Ba nguyên tắc vàng khi khai cuộc."
+        },
+        {
+          "text": "Nguyên tắc số 3, rất nhiều bạn đang hiểu sai!",
+          "say": "Nguyên tắc số ba, rất nhiều bạn đang hiểu sai!",
+          "events": [
+            {
+              "type": "sticker",
+              "text": "#3 = HIỂU SAI?",
+              "color": "red"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "r1",
+      "header": {
+        "chip": "NGUYÊN TẮC 1/3",
+        "title": "Tốt trung tâm"
+      },
+      "board": {
+        "reset": true
+      },
+      "phrases": [
+        {
+          "text": "Nguyên tắc 1: chiếm trung tâm bằng tốt.",
+          "say": "Nguyên tắc một: chiếm trung tâm bằng tốt."
+        },
+        {
+          "text": "4 ô ở giữa là vùng quan trọng nhất bàn cờ.",
+          "say": "Bốn ô ở giữa là vùng quan trọng nhất bàn cờ.",
+          "events": [
+            {
+              "type": "highlight",
+              "squares": [
+                "d4",
+                "e4",
+                "d5",
+                "e5"
+              ],
+              "color": "gold"
+            }
+          ]
+        },
+        {
+          "text": "Trắng đi e4, Đen đáp lại e5.",
+          "say": "Trắng đi e bốn, Đen đáp lại e năm.",
+          "events": [
+            {
+              "type": "move",
+              "san": "e4",
+              "word": 2
+            },
+            {
+              "type": "move",
+              "san": "e5",
+              "word": 7
+            }
+          ]
+        },
+        {
+          "text": "Tốt trung tâm mở đường cho Hậu và Tượng ra trận.",
+          "events": [
+            {
+              "type": "clear"
+            },
+            {
+              "type": "arrow",
+              "from": "f1",
+              "to": "c4",
+              "color": "green",
+              "word": 4
+            },
+            {
+              "type": "arrow",
+              "from": "d1",
+              "to": "h5",
+              "color": "green",
+              "word": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "r2",
+      "header": {
+        "chip": "NGUYÊN TẮC 2/3",
+        "title": "Phát triển Mã, Tượng"
+      },
+      "phrases": [
+        {
+          "text": "Nguyên tắc 2: phát triển Mã và Tượng, hướng về trung tâm.",
+          "say": "Nguyên tắc hai: phát triển mã và tượng, hướng về trung tâm.",
+          "events": [
+            {
+              "type": "clear"
+            }
+          ]
+        },
+        {
+          "text": "Mã f3 tấn công tốt e5.",
+          "say": "Mã f ba tấn công tốt e năm.",
+          "events": [
+            {
+              "type": "move",
+              "san": "Nf3"
+            },
+            {
+              "type": "arrow",
+              "from": "f3",
+              "to": "e5",
+              "color": "red",
+              "word": 4
+            }
+          ]
+        },
+        {
+          "text": "Đen bảo vệ bằng Mã c6.",
+          "say": "Đen bảo vệ bằng mã c sáu.",
+          "events": [
+            {
+              "type": "move",
+              "san": "Nc6",
+              "word": 3
+            },
+            {
+              "type": "arrow",
+              "from": "c6",
+              "to": "e5",
+              "color": "green",
+              "word": 5
+            }
+          ]
+        },
+        {
+          "text": "Mã ở trung tâm kiểm soát tới 8 ô, Mã ở biên chỉ còn tối đa 4.",
+          "say": "Mã ở trung tâm kiểm soát tới tám ô, mã ở biên chỉ còn tối đa bốn.",
+          "events": [
+            {
+              "type": "clear"
+            },
+            {
+              "type": "dots",
+              "from": "f3",
+              "word": 5
+            }
+          ]
+        },
+        {
+          "text": "Tượng c4 nhắm thẳng vào điểm yếu f7.",
+          "say": "Tượng c bốn nhắm thẳng vào điểm yếu f bảy.",
+          "events": [
+            {
+              "type": "clear"
+            },
+            {
+              "type": "move",
+              "san": "Bc4"
+            },
+            {
+              "type": "arrow",
+              "from": "c4",
+              "to": "f7",
+              "color": "red",
+              "word": 4
+            },
+            {
+              "type": "highlight",
+              "squares": [
+                "f7"
+              ],
+              "color": "red",
+              "word": 8
+            }
+          ]
+        },
+        {
+          "text": "Đen cũng làm như vậy: Tượng c5.",
+          "say": "Đen cũng làm như vậy: tượng c năm.",
+          "events": [
+            {
+              "type": "clear"
+            },
+            {
+              "type": "move",
+              "san": "Bc5",
+              "word": 5
+            },
+            {
+              "type": "arrow",
+              "from": "c5",
+              "to": "f2",
+              "color": "red",
+              "word": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "r3",
+      "header": {
+        "chip": "NGUYÊN TẮC 3/3",
+        "title": "An toàn cho Vua"
+      },
+      "phrases": [
+        {
+          "text": "Nguyên tắc 3: giữ an toàn cho Vua.",
+          "say": "Nguyên tắc ba: giữ an toàn cho vua.",
+          "events": [
+            {
+              "type": "clear"
+            }
+          ]
+        },
+        {
+          "text": "Nhập thành là cách quen thuộc nhất.",
+          "events": [
+            {
+              "type": "move",
+              "san": "O-O",
+              "word": 1
+            },
+            {
+              "type": "highlight",
+              "squares": [
+                "g1",
+                "f1"
+              ],
+              "color": "green",
+              "word": 5
+            }
+          ]
+        },
+        {
+          "text": "Nhưng nhiều bạn nhầm: nguyên tắc 3 là “lúc nào cũng phải nhập thành”.",
+          "say": "Nhưng nhiều bạn nhầm rằng, nguyên tắc ba là: lúc nào cũng phải nhập thành.",
+          "events": [
+            {
+              "type": "sticker",
+              "text": "SAI!",
+              "color": "red",
+              "word": 8
+            }
+          ]
+        },
+        {
+          "text": "Mục tiêu là Vua an toàn. Nhập thành chỉ là một công cụ.",
+          "events": [
+            {
+              "type": "clear"
+            },
+            {
+              "type": "sticker",
+              "text": "VUA AN TOÀN ✓",
+              "color": "green"
+            }
+          ]
+        },
+        {
+          "text": "Ví dụ: thế phòng thủ Berlin nổi tiếng, được dùng ở trình độ cao nhất.",
+          "say": "Ví dụ: thế phòng thủ Béc-lin nổi tiếng, được dùng ở trình độ cao nhất.",
+          "events": [
+            {
+              "type": "clear"
+            },
+            {
+              "type": "label",
+              "text": "Phòng thủ Berlin  ▶▶"
+            },
+            {
+              "type": "line",
+              "reset": true,
+              "word": 2,
+              "step": 0.2,
+              "san": [
+                "e4",
+                "e5",
+                "Nf3",
+                "Nc6",
+                "Bb5",
+                "Nf6",
+                "O-O",
+                "Nxe4",
+                "d4",
+                "Nd6",
+                "Bxc6",
+                "dxc6",
+                "dxe5",
+                "Nf5",
+                "Qxd8+",
+                "Kxd8"
+              ]
+            }
+          ]
+        },
+        {
+          "text": "Hậu đã đổi. Vua Đen mất quyền nhập thành, nhưng vẫn rất an toàn ở trung tâm.",
+          "events": [
+            {
+              "type": "highlight",
+              "squares": [
+                "d8"
+              ],
+              "color": "green",
+              "word": 6
+            },
+            {
+              "type": "shield",
+              "square": "d8",
+              "word": 6
+            }
+          ]
+        },
+        {
+          "text": "Kramnik dùng chính thế cờ này để vô hiệu hoá Kasparov và giành ngôi vô địch thế giới năm 2000.",
+          "say": "Kram-nic dùng chính thế cờ này để vô hiệu hoá Ca-xpa-rốp và giành ngôi vô địch thế giới năm hai nghìn.",
+          "events": [
+            {
+              "type": "label",
+              "text": "Kramnik – Kasparov · 2000"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "header": {
+        "chip": "TÓM TẮT",
+        "title": "Nhớ 3 nguyên tắc"
+      },
+      "layout": "outro",
+      "phrases": [
+        {
+          "text": "Tóm lại: tốt trung tâm, phát triển Mã Tượng, và an toàn cho Vua.",
+          "events": [
+            {
+              "type": "clear"
+            },
+            {
+              "type": "recap",
+              "index": 0,
+              "word": 2
+            },
+            {
+              "type": "recap",
+              "index": 1,
+              "word": 5
+            },
+            {
+              "type": "recap",
+              "index": 2,
+              "word": 10
+            }
+          ]
+        },
+        {
+          "text": "Lưu video lại và theo dõi Chess Empire để học cờ, học cách nghĩ nhé!",
+          "say": "Lưu video lại và theo dõi Chét Em-pai để học cờ, học cách nghĩ nhé!",
+          "events": [
+            {
+              "type": "endcard"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "recap": [
+    "Tốt trung tâm",
+    "Phát triển Mã, Tượng",
+    "An toàn cho Vua\n(không chỉ là nhập thành)"
+  ]
+}
