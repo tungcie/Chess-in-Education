@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  web:
+    name: Lint · typecheck · test · build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  db:
+    name: Test phân quyền (pgTAP)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cài pgTAP
+        run: sudo apt-get update -q && sudo apt-get install -y -q postgresql-16-pgtap libtap-parser-sourcehandler-pgtap-perl
+      - run: bash scripts/test-db.sh
+
+  edge-function:
+    name: Kiểm tra Edge Function (Deno)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: deno check supabase/functions/admin-users/index.ts

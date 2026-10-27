@@ -19,7 +19,8 @@
 - Thử trên dữ liệu thật thì dùng dữ liệu tạm tên "QA …", thử xong xóa hết, so số liệu trước / sau.
 - Logic tính toán (sinh lịch, đẩy / dồn nội dung, giáo trình, tiến độ, học phí, gói buổi, báo cáo, rating) viết thành **hàm thuần
   có test** (Vitest), để cạnh file dùng nó. Không test logic qua Supabase.
-- **Phân quyền có test tự động ở DB** (pgTAP, `supabase/tests/*.sql`, chạy bằng `supabase test db`): mỗi bảng / view mới phải có
+- **Phân quyền có test tự động ở DB** (pgTAP, `supabase/tests/*.sql`, chạy bằng `npm run test:db` — Postgres tạm, không cần Docker —
+  hoặc `supabase test db`; CI chạy mỗi lần đẩy code). `00_kiem_tra_chung.sql` tự kiểm mọi bảng / view. Mỗi bảng / view mới phải có
   test "vai trò X của đơn vị A không đọc / ghi được dữ liệu đơn vị B", "giáo viên không ghi được bảng tiền", "view không ghi
   xuyên được". Không có test phân quyền thì giai đoạn chưa xong.
 - Quyết định mới chủ dự án chốt → ghi thêm vào mục 15 cuối file.
@@ -50,12 +51,13 @@ tự viết nhận xét học sinh bằng AI. Tài liệu giảng dạy, video, 
 
 ## 2. Công nghệ
 
-- **Giao diện:** React 18 + Vite + TypeScript · Tailwind CSS v4 (+ Radix cho hộp thoại, menu) · TanStack Query · React Router 6 ·
+- **Giao diện:** React 18 + Vite + TypeScript · Tailwind CSS v4 (+ Radix cho hộp thoại, menu) · TanStack Query · React Router 7 ·
   React Hook Form + Zod · Vitest.
 - **Dữ liệu:** Supabase (Postgres + Auth + Edge Function), gọi bằng `@supabase/supabase-js`. Không dùng ORM. Kiểu TypeScript sinh
   bằng `supabase gen types typescript` → `src/lib/database.types.ts` (không viết tay).
-- **Supabase CLI** quản lý migration (`supabase migration new`, `supabase db push`) và test phân quyền (`supabase test db`).
-  Nếu chưa dùng CLI được thì vẫn có thể dán file migration vào SQL Editor theo đúng thứ tự.
+- **Supabase CLI** quản lý migration (`supabase migration new`, `supabase db push`). Đưa lên Supabase bằng GitHub Actions
+  `supabase-deploy.yml` (chạy tay, chọn project thử / thật, có chế độ chạy thử). Cách dự phòng: dán file migration vào SQL Editor
+  theo đúng thứ tự. Hướng dẫn cho chủ dự án: `docs/huong-dan-cai-dat.md`.
 - **Phân quyền nằm ở DB** (Row Level Security trên mọi bảng); giao diện chỉ ẩn nút. Trình duyệt gọi thẳng DB bằng anon key vẫn
   an toàn.
 - **Đưa lên mạng:** Cloudflare Pages (trang tĩnh, dùng thương mại được). Việc hằng đêm: GitHub Actions.
@@ -97,23 +99,30 @@ scripts/                    việc chạy hằng đêm, sao lưu, khôi phục
 - `account_students` (`user_id`, `student_id`, `relation` self | parent): tài khoản học sinh → chính em đó; tài khoản phụ huynh →
   **một hoặc nhiều con**. Unique `(user_id, student_id)`.
 - Đăng nhập mà không có `org_members` nào đang hoạt động (và không phải super admin) → màn "Tài khoản chưa được cấp quyền".
-- **Đơn vị đang chọn:** người thuộc nhiều đơn vị có ô chọn đơn vị ở đầu menu; lưu ở URL (`/o/:orgSlug/...`) để mở link nào cũng
-  đúng đơn vị. Riêng **Hôm nay** và **Lịch tuần** của giáo viên gộp mọi đơn vị (ghi tên đơn vị trên từng buổi).
+- **Đơn vị đang chọn:** hiện tại app chạy **1 đơn vị** (mục 15): không có ô chọn đơn vị, đơn vị đang dùng = đơn vị đang hoạt
+  động duy nhất của người dùng (super admin: đơn vị đầu tiên). DB vẫn có `org_id` ở mọi bảng để sau này mở nhiều đơn vị mà không
+  phải đổi dữ liệu. Khi mở nhiều đơn vị: thêm ô chọn đơn vị, lưu ở URL (`/o/:orgSlug/...`); **Hôm nay** và **Lịch tuần** của giáo
+  viên gộp mọi đơn vị.
 - **Tắt tự đăng ký** trong Supabase Auth. Tạo / đặt lại mật khẩu / khóa / xóa tài khoản qua Edge Function `admin-users` (service_role
   ở máy chủ). Hàm kiểm người gọi: super admin tạo được quản lý đơn vị; quản lý đơn vị chỉ tạo giáo viên / học sinh / phụ huynh **trong
-  đơn vị mình**; không ai tự đổi vai trò hay tự xóa chính mình; không ai ngoài super admin cấp `is_super_admin`.
-- **Học sinh nhỏ thường không có email** → cho phép tạo tài khoản bằng **tên đăng nhập**: Edge Function tạo user với email nội bộ
-  `<tên>@<mã-đơn-vị>.hs.invalid` (đã xác nhận sẵn), màn đăng nhập chấp nhận "email hoặc tên đăng nhập". **[CẦN CHỐT]**
+  đơn vị mình**; **giáo viên tạo được tài khoản học sinh** (và đặt lại mật khẩu cho tài khoản học sinh mình tạo); không ai tự đổi
+  vai trò hay tự xóa chính mình; không ai ngoài super admin cấp `is_super_admin`. Quy tắc ai được làm gì viết thành hàm thuần ở
+  `supabase/functions/_shared/accountRules.ts`, có test, giao diện và Edge Function dùng chung.
+- **Học sinh không cần email** → tài khoản tạo bằng **tên đăng nhập** (chữ thường không dấu, số, dấu chấm / gạch dưới; duy nhất toàn
+  hệ thống): Edge Function tạo user với email nội bộ `<tên>@hs.chessineducation.invalid` (đã xác nhận sẵn, không bao giờ gửi thư), màn
+  đăng nhập chấp nhận "email hoặc tên đăng nhập". Có email thật thì dùng email.
 - Đổi mật khẩu: xác minh mật khẩu cũ bằng đăng nhập lại trước khi đổi.
 - **Đăng xuất và đổi đơn vị phải xóa hết cache dữ liệu** (TanStack Query `clear()`), không thì người sau / đơn vị sau thấy dữ liệu
   cũ. Mọi query key bắt đầu bằng `orgId`.
-- Super admin đầu tiên: tạo trong Supabase Auth **trước**, rồi chạy migration đặt `is_super_admin = true` cho email đó (email ghi ở
-  biến cấu hình, không ghi vào code).
+- Mỗi user mới trong `auth.users` tự có dòng `profiles` (trigger). Super admin đầu tiên + đơn vị đầu tiên: tạo user trong Supabase
+  Auth, rồi chạy `supabase/setup/khoi_tao.sql` (điền email + tên đơn vị) trong SQL Editor — file này không phải migration, không
+  chứa email thật.
 
 ### 4.2 Giáo viên — được và không được
 - Chỉ thấy lớp nhóm / lớp 1-1 **được phân công** (`class_teachers`, `course_teachers`; quản lý phân công ở trang lớp).
 - Trong lớp của mình: thêm / cho rời học viên, tạo học viên mới, sửa lịch (cả lớp và từng em), thêm buổi, áp / đổi / sắp xếp giáo
   trình, điểm danh, nhận xét, đánh giá tiến độ, đánh dấu Đã dạy, báo nghỉ, báo cáo.
+- Tạo tài khoản học sinh (cho em chưa có email), đặt lại mật khẩu cho tài khoản học sinh mình tạo.
 - Menu Học viên: chỉ học viên lớp mình + em mình tạo; hồ sơ **chỉ xem, không có học phí, không có số điện thoại phụ huynh**
   **[CẦN CHỐT: giáo viên có cần thấy SĐT phụ huynh không?]**.
 - Học phí: **chỉ xem** học phí theo tháng các lớp mình (8.8). Không thấy giá gói, không đóng tiền, không thiết lập giá.
@@ -471,7 +480,10 @@ lệch số).
   "Gần đây" (4 trang vừa mở).
 - **Bảng → thẻ trên điện thoại:** dưới `md` mỗi dòng thành 1 thẻ, ô có nhãn nhỏ, nút xuống hàng riêng. Không bắt vuốt ngang mới thấy nút.
 - Thao tác ít dùng / nguy hiểm gom vào menu "⋯"; xác nhận bằng hộp thoại riêng (không dùng `window.confirm`).
-- Màu khai báo 1 chỗ (biến CSS / `@theme` của Tailwind). Logo, màu chủ đạo: theo Chess Empire / Chess in Education **[CẦN CHỐT]**.
+- Màu khai báo 1 chỗ (`@theme` của Tailwind trong `src/index.css`). Màu theo logo Chess in Education Vietnam: **xanh navy `#0F2749`**
+  (chữ, nút chính, menu) + **vàng `#E9BD36`** (điểm nhấn, mục đang chọn), nền sáng trắng / xám rất nhạt. Logo ở `public/brand/`:
+  Chess in Education Vietnam (chính, ở header + màn đăng nhập) và Chess Empire ("phát triển bởi", màn đăng nhập + chân menu —
+  hiện ghi chữ, **chờ file logo Chess Empire**).
 - Trạng thái trống, đang tải, lỗi: mọi trang đều có (khung xám khi tải, câu hướng dẫn khi trống, nút "Thử lại" khi lỗi).
 - `manifest.webmanifest` + icon 192/512 + apple-touch-icon → "Thêm vào màn hình chính" mở như ứng dụng.
 
@@ -511,8 +523,8 @@ sinh lịch đã có.
 
 | # | Giai đoạn | Xong khi |
 |---|---|---|
-| 1 | **Nền:** dự án Vite, Supabase CLI + 2 project, đăng nhập (email / tên đăng nhập), `organizations` + `profiles` + `org_members` + `account_students` + hàm phân quyền, khung giao diện (menu trái, thanh dưới, chọn đơn vị), Edge Function + trang Tài khoản + trang Đơn vị, CI (lint + test + build) | Super admin tạo được đơn vị + quản lý; quản lý tạo được giáo viên / học sinh; mỗi vai trò thấy đúng menu; test pgTAP: người đơn vị A không thấy gì của đơn vị B |
-| 2 | **Học viên:** danh sách, thêm / sửa / trạng thái, phụ huynh, nhập Excel, hồ sơ, view cho giáo viên | Giáo viên không đọc / ghi thẳng được bảng `students` (test pgTAP + thử bằng request) |
+| 1 | **Nền:** dự án Vite, Supabase CLI + 2 project, đăng nhập (email / tên đăng nhập), `organizations` + `profiles` + `org_members` + hàm phân quyền, khung giao diện (menu trái, thanh dưới), Edge Function + trang Tài khoản + trang Đơn vị (thông tin đơn vị), CI (lint + test + build + test DB) | Quản lý tạo được giáo viên / học sinh, giáo viên tạo được học sinh; mỗi vai trò thấy đúng menu; test pgTAP: người đơn vị A không thấy gì của đơn vị B |
+| 2 | **Học viên:** danh sách, thêm / sửa / trạng thái, phụ huynh, nhập Excel, hồ sơ, view cho giáo viên, `account_students` (gắn tài khoản học sinh với hồ sơ) | Giáo viên không đọc / ghi thẳng được bảng `students` (test pgTAP + thử bằng request) |
 | 3 | **Lớp nhóm — lịch và buổi:** lịch tuần → 16 buổi, ngày nghỉ chung, Đã dạy, sửa / thêm buổi, nghỉ (đẩy / dồn + bỏ nghỉ), phân công giáo viên, `taught_by`; Lịch tuần + Hôm nay | Đánh dấu Đã dạy luôn còn 16 buổi phía trước; số buổi đúng thứ tự ngày; test hàm thuần đẩy / dồn đủ trường hợp |
 | 4 | **Lớp nhóm — học viên và điểm danh:** thành viên, điểm danh + nhận xét + xử lý vắng, học bù, điểm danh nhanh (chịu được mất mạng) | Thêm em giữa chừng chỉ có điểm danh từ buổi chưa dạy gần nhất; điểm danh nhanh dùng tốt trên điện thoại |
 | 5 | **Giáo trình + tiến độ:** giáo trình chung / đơn vị, soạn, tải Excel, áp vào lớp, bài tiếp theo, sắp xếp; tiến độ theo giáo trình, đánh giá kỹ năng | Áp giáo trình chỉ đổi buổi chưa dạy; hồ sơ em hiện đúng "đã học x / y bài" và bài bị lỡ |
@@ -548,9 +560,11 @@ sinh lịch đã có.
 
 ## 15. Quyết định đã chốt (Claude ghi thêm khi chủ dự án chốt)
 
-- Tên dự án: **Chess in Education** — phát triển bởi **Chess Empire**. Logo / màu chủ đạo: …
-- Mô hình: nhiều đơn vị (trường / CLB / trung tâm), 1 giáo viên có thể thuộc nhiều đơn vị — **chờ chủ dự án xác nhận**.
-- Học sinh đăng nhập bằng tên đăng nhập (không cần email): …
+- Tên dự án: **Chess in Education Vietnam** — phát triển bởi **Chess Empire**. Màu theo logo Chess in Education (navy + vàng), giao
+  diện sáng sủa (mục 11). (27/10/2026)
+- Mô hình: **trước mắt 1 đơn vị** (giao diện không có chọn đơn vị); **lâu dài là nền tảng bán cho nhiều trường** (kèm giáo trình,
+  video, bài tập, bài kiểm tra) → DB làm nhiều đơn vị ngay từ đầu (mục 4). (27/10/2026)
+- Học sinh **không cần email**, đăng nhập bằng tên đăng nhập; **giáo viên được tạo tài khoản học sinh**. (27/10/2026)
 - Giáo viên có thấy SĐT phụ huynh: …
 - Trình độ lớp nhóm và bảng giá: …
 - Hạn đóng học phí: ngày … tháng sau
