@@ -28,8 +28,13 @@ chữ, tìm mục có ý nghĩa tương tự hoặc hỏi Claude.
    - **Project ref**: Project Settings → General → *Project ID* (chuỗi khoảng 20 chữ cái).
    - **Project URL**: `https://<project-ref>.supabase.co` (cũng thấy ở Project Settings → Data API).
    - **Anon / publishable key**: Project Settings → API Keys → *Publishable key* (hoặc tab *Legacy API keys* → `anon public`).
-7. Tạo **Access token** (dùng cho GitHub tự đưa code lên Supabase): bấm ảnh đại diện góc trên → **Account preferences → Access
-   Tokens → Generate new token**, tên `github-deploy`. Chép ngay (chỉ hiện 1 lần).
+7. Tạo **Access token** (dùng cho GitHub tự đưa code lên Supabase): mở <https://supabase.com/dashboard/account/tokens> →
+   **Generate new token**, tên `github-deploy`, thời hạn dài nhất.
+   - Có lựa chọn **Classic** → chọn loại đó (không phải chọn quyền).
+   - Chỉ có loại giới hạn quyền (scoped) → Projects: chọn `cie-thu` và `cie-that`; Permissions: **Read-write** cho Database, Edge
+     Functions, Projects (không chắc thì Read-write tất cả).
+   - Bấm Generate → hiện **một dòng chữ dài + nút Copy** (đầu chuỗi có thể là `sbp_…` hoặc khác) → chép ngay, chỉ hiện 1 lần.
+   - Deploy báo lỗi 403 / "missing permissions" → token thiếu quyền: xóa, tạo lại với nhiều quyền hơn.
 
 > Gói Free: project **không có ai dùng trong 7 ngày sẽ bị tạm dừng** (dữ liệu vẫn còn, vào trang Supabase bấm *Restore* là chạy
 > lại). Project thật có người dùng hằng ngày nên không bị. Sao lưu tự động hằng đêm làm ở giai đoạn 10.
