@@ -124,8 +124,8 @@ scripts/                    việc chạy hằng đêm, sao lưu, khôi phục
 - Trong lớp của mình: thêm / cho rời học viên, tạo học viên mới, sửa lịch (cả lớp và từng em), thêm buổi, áp / đổi / sắp xếp giáo
   trình, điểm danh, nhận xét, đánh giá tiến độ, đánh dấu Đã dạy, báo nghỉ, báo cáo.
 - Tạo tài khoản học sinh (cho em chưa có email), đặt lại mật khẩu cho tài khoản học sinh mình tạo.
-- Menu Học viên: chỉ học viên lớp mình + em mình tạo; hồ sơ **chỉ xem, không có học phí, không có số điện thoại phụ huynh**
-  **[CẦN CHỐT: giáo viên có cần thấy SĐT phụ huynh không?]**.
+- Menu Học viên: chỉ học viên lớp mình + em mình tạo; hồ sơ **chỉ xem, không có học phí**; **có** thấy liên hệ phụ huynh (SĐT, Zalo)
+  để tự báo bài / báo vắng (mục 15).
 - Học phí: **chỉ xem** học phí theo tháng các lớp mình (8.8). Không thấy giá gói, không đóng tiền, không thiết lập giá.
 - Không: tạo lớp, sửa tên / trạng thái / ngày bắt đầu / trình độ lớp, sửa / xóa hồ sơ học viên, liên kết chess.com, sửa buổi đã
   dạy, xóa điểm danh đã chấm. Giáo viên đọc giáo trình nhưng không sửa.
@@ -166,8 +166,8 @@ suspended), `address`, `logo_url`, `tuition_due_day` (mặc định hạn đóng
 `account_students` (mục 4.1).
 
 **Học viên**
-- `students`: `full_name`, `birth_year`, `school_class` (lớp ở trường, vd "3A" — hữu ích cho đơn vị là trường học), `phone`,
-  `email`, `level` (trình độ ghi tay), `level_source` (manual | rapid | blitz | bullet | daily | tactics), `start_date`, `status`
+- `students`: `full_name`, `birth_date` (ngày sinh đầy đủ), `gender` (male | female, không bắt buộc), `address`, `school_class` (lớp ở
+  trường, vd "3A"), `phone`, `email`, `level` (trình độ ghi tay), `level_source` (manual | rapid | blitz | bullet | daily | tactics), `start_date`, `status`
   (active Đang học | paused Tạm nghỉ | inactive Đã nghỉ), `notes`, `created_by`. Unique `(org_id, id)`.
 - `guardians` (liên hệ phụ huynh, không bắt buộc có tài khoản): `student_id`, `full_name`, `relation`, `phone`, `zalo_name`,
   `is_primary`. Dùng để soạn tin nhắc học phí / báo cáo.
@@ -525,7 +525,7 @@ sinh lịch đã có.
 | # | Giai đoạn | Xong khi |
 |---|---|---|
 | 1 | **Nền:** dự án Vite, Supabase CLI + 2 project, đăng nhập (email / tên đăng nhập), `organizations` + `profiles` + `org_members` + hàm phân quyền, khung giao diện (menu trái, thanh dưới), Edge Function + trang Tài khoản + trang Đơn vị (thông tin đơn vị), CI (lint + test + build + test DB) | Quản lý tạo được giáo viên / học sinh, giáo viên tạo được học sinh; mỗi vai trò thấy đúng menu; test pgTAP: người đơn vị A không thấy gì của đơn vị B |
-| 2 | **Học viên:** danh sách, thêm / sửa / trạng thái, phụ huynh, nhập Excel, hồ sơ, view cho giáo viên, `account_students` (gắn tài khoản học sinh với hồ sơ) | Giáo viên không đọc / ghi thẳng được bảng `students` (test pgTAP + thử bằng request) |
+| 2 | **Học viên:** danh sách, thêm / sửa / trạng thái, phụ huynh, hồ sơ (nhập Excel để sau), view cho giáo viên, `account_students` (gắn tài khoản học sinh với hồ sơ) | Giáo viên không đọc / ghi thẳng được bảng `students` (test pgTAP + thử bằng request) |
 | 3 | **Lớp nhóm — lịch và buổi:** lịch tuần → 16 buổi, ngày nghỉ chung, Đã dạy, sửa / thêm buổi, nghỉ (đẩy / dồn + bỏ nghỉ), phân công giáo viên, `taught_by`; Lịch tuần + Hôm nay | Đánh dấu Đã dạy luôn còn 16 buổi phía trước; số buổi đúng thứ tự ngày; test hàm thuần đẩy / dồn đủ trường hợp |
 | 4 | **Lớp nhóm — học viên và điểm danh:** thành viên, điểm danh + nhận xét + xử lý vắng, học bù, điểm danh nhanh (chịu được mất mạng) | Thêm em giữa chừng chỉ có điểm danh từ buổi chưa dạy gần nhất; điểm danh nhanh dùng tốt trên điện thoại |
 | 5 | **Giáo trình + tiến độ:** giáo trình chung / đơn vị, soạn, tải Excel, áp vào lớp, bài tiếp theo, sắp xếp; tiến độ theo giáo trình, đánh giá kỹ năng | Áp giáo trình chỉ đổi buổi chưa dạy; hồ sơ em hiện đúng "đã học x / y bài" và bài bị lỡ |
@@ -567,7 +567,10 @@ sinh lịch đã có.
 - Mô hình: **trước mắt 1 đơn vị** (giao diện không có chọn đơn vị); **lâu dài là nền tảng bán cho nhiều trường** (kèm giáo trình,
   video, bài tập, bài kiểm tra) → DB làm nhiều đơn vị ngay từ đầu (mục 4). (27/10/2026)
 - Học sinh **không cần email**, đăng nhập bằng tên đăng nhập; **giáo viên được tạo tài khoản học sinh**. (27/10/2026)
-- Giáo viên có thấy SĐT phụ huynh: …
+- Giáo viên **được xem SĐT / Zalo phụ huynh**. (27/10/2026)
+- Hồ sơ học sinh có thêm **ngày sinh đầy đủ, giới tính, địa chỉ**; chưa cần nhập từ Excel (làm sau khi cần). (27/10/2026)
+- Học phí dùng 2 cách: **theo số buổi đã học** (điểm danh Có mặt) và **gói N buổi đóng trước** → giai đoạn Học phí làm sau lớp học +
+  điểm danh, giữ thứ tự mục 13. Còn chốt: giá theo gì, vắng có tính không, hạn đóng. (27/10/2026)
 - Trình độ lớp nhóm và bảng giá: …
 - Hạn đóng học phí: ngày … tháng sau
 - Có dùng gói buổi: có / không

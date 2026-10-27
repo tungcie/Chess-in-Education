@@ -36,14 +36,23 @@ export function Icon({ name, className = 'size-5', ...rest }: { name: IconKey } 
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={name === 'more' ? 3.5 : 2}
+      strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
       className={className}
       {...rest}
     >
-      <path d={PATHS[name]} />
+      {name === 'more' ? (
+        // Dấu "⋯": 3 chấm tô đặc cho dễ thấy
+        <g fill="currentColor" stroke="none">
+          <circle cx="5" cy="12" r="2" />
+          <circle cx="12" cy="12" r="2" />
+          <circle cx="19" cy="12" r="2" />
+        </g>
+      ) : (
+        <path d={PATHS[name]} />
+      )}
     </svg>
   )
 }

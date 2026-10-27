@@ -8,6 +8,8 @@ import { LoginPage } from './features/auth/LoginPage'
 import { homePath, NAV, type NavKey } from './features/auth/navigation'
 import { ComingSoonPage } from './features/home/ComingSoonPage'
 import { OrgPage } from './features/org/OrgPage'
+import { StudentDetailPage } from './features/students/StudentDetailPage'
+import { StudentsPage } from './features/students/StudentsPage'
 
 function HomeRedirect() {
   const { role } = useAuth()
@@ -17,6 +19,7 @@ function HomeRedirect() {
 
 const PAGES: Partial<Record<NavKey, React.ReactNode>> = {
   accounts: <AccountsPage />,
+  students: <StudentsPage />,
   org: <OrgPage />,
 }
 
@@ -30,6 +33,14 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <HomeRedirect /> },
           { path: '/doi-mat-khau', element: <ChangePasswordPage /> },
+          {
+            path: '/hoc-vien/:id',
+            element: (
+              <RequireNav navKey="students">
+                <StudentDetailPage />
+              </RequireNav>
+            ),
+          },
           ...Object.values(NAV).map((item) => ({
             path: item.path,
             element: <RequireNav navKey={item.key}>{PAGES[item.key] ?? <ComingSoonPage item={item} />}</RequireNav>,

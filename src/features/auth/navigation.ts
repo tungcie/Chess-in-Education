@@ -42,7 +42,7 @@ export const NAV: Record<NavKey, NavItem> = {
   overview: { key: 'overview', label: 'Tổng quan', shortLabel: 'Tổng quan', path: '/tong-quan', icon: 'dashboard', phase: 3 },
   today: { key: 'today', label: 'Hôm nay', shortLabel: 'Hôm nay', path: '/hom-nay', icon: 'sun', phase: 3 },
   calendar: { key: 'calendar', label: 'Lịch tuần', shortLabel: 'Lịch', path: '/lich', icon: 'calendar', phase: 3 },
-  students: { key: 'students', label: 'Học viên', shortLabel: 'Học viên', path: '/hoc-vien', icon: 'users', phase: 2 },
+  students: { key: 'students', label: 'Học viên', shortLabel: 'Học viên', path: '/hoc-vien', icon: 'users' },
   classes: { key: 'classes', label: 'Lớp học', shortLabel: 'Lớp học', path: '/lop-hoc', icon: 'school', phase: 3 },
   curriculum: { key: 'curriculum', label: 'Giáo trình', shortLabel: 'Giáo trình', path: '/giao-trinh', icon: 'book', phase: 5 },
   tuition: { key: 'tuition', label: 'Học phí', shortLabel: 'Học phí', path: '/hoc-phi', icon: 'wallet', phase: 6 },
