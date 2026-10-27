@@ -60,7 +60,8 @@ tự viết nhận xét học sinh bằng AI. Tài liệu giảng dạy, video, 
   theo đúng thứ tự. Hướng dẫn cho chủ dự án: `docs/huong-dan-cai-dat.md`.
 - **Phân quyền nằm ở DB** (Row Level Security trên mọi bảng); giao diện chỉ ẩn nút. Trình duyệt gọi thẳng DB bằng anon key vẫn
   an toàn.
-- **Đưa lên mạng:** Cloudflare Pages (trang tĩnh, dùng thương mại được). Việc hằng đêm: GitHub Actions.
+- **Đưa lên mạng:** Cloudflare Workers static assets (`wrangler.jsonc`, build từ GitHub `main`; dùng thương mại được). Việc hằng
+  đêm: GitHub Actions.
 - Không thêm thư viện ngoài danh sách này khi chưa hỏi. Đọc Excel: thư viện `xlsx` bản **0.20.x tải từ cdn.sheetjs.com** (bản npm
   0.18.5 có lỗ hổng), chỉ `import()` động khi cần.
 
@@ -543,7 +544,8 @@ sinh lịch đã có.
   `supabase db push` (hoặc dán lần lượt các migration) → deploy Edge Function `admin-users`. Quyền bảng (`grant select, insert, update,
   delete … to authenticated`) nằm sẵn trong migration; RLS vẫn chặn từng dòng.
 - **Đưa lên mạng:** biến môi trường `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (anon key công khai được). Mọi đường dẫn trả
-  `index.html` (Cloudflare Pages: file `public/_redirects` với `/* /index.html 200`). Supabase → Authentication → URL Configuration:
+  `index.html` (Cloudflare Workers: `wrangler.jsonc` → `assets.not_found_handling = "single-page-application"`; **không** dùng
+  `public/_redirects` — Workers coi `/* /index.html 200` là vòng lặp và hủy deploy). Supabase → Authentication → URL Configuration:
   Site URL = địa chỉ web.
 - **Việc hằng đêm** (GitHub Actions, 01:00 giờ VN = cron `0 18 * * *` UTC, có nút chạy tay + ô "Chỉ chạy thử"): 1. đồng bộ khoản học
   phí tháng; 2. giữ 16 buổi chưa dạy cho mọi lớp đang học; 3. đồng bộ chess.com / lichess mọi tài khoản (lần lượt). Chạy cho **từng đơn

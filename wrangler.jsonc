@@ -1,0 +1,11 @@
+// Cấu hình Cloudflare Workers (static assets) — Cloudflare tự đọc file này khi build từ GitHub.
+// "name" phải trùng tên Worker trên Cloudflare (Workers & Pages → tên dự án).
+{
+  "name": "chess-in-education",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./dist",
+    // App 1 trang: đường dẫn không có file (vd /lop-hoc/abc) trả về index.html, không báo 404.
+    "not_found_handling": "single-page-application"
+  }
+}

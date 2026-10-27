@@ -34,10 +34,10 @@ jobs:
         run: supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
       - name: Migration (chạy thử)
         if: inputs.dry_run
-        run: supabase db push --dry-run --password "$SUPABASE_DB_PASSWORD"
+        run: supabase db push --linked --dry-run --password "$SUPABASE_DB_PASSWORD"
       - name: Migration
         if: ${{ !inputs.dry_run }}
-        run: supabase db push --yes --password "$SUPABASE_DB_PASSWORD"
+        run: supabase db push --linked --yes --password "$SUPABASE_DB_PASSWORD"
       - name: Edge Function admin-users
         if: ${{ !inputs.dry_run }}
         run: supabase functions deploy admin-users --project-ref "$PROJECT_REF"

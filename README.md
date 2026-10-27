@@ -6,7 +6,7 @@ Trang web quản lý dữ liệu của dự án Chess in Education tại Việt 
 - Bản thiết kế, quy tắc và thứ tự các giai đoạn: [`CLAUDE.md`](CLAUDE.md)
 - Đăng ký Supabase / GitHub / Cloudflare và đưa app lên mạng: [`docs/huong-dan-cai-dat.md`](docs/huong-dan-cai-dat.md)
 
-Công nghệ: React + Vite + TypeScript, Tailwind CSS, Supabase (Postgres + Auth + Edge Function), Cloudflare Pages.
+Công nghệ: React + Vite + TypeScript, Tailwind CSS, Supabase (Postgres + Auth + Edge Function), Cloudflare Workers.
 
 ### Lệnh cho người phát triển
 

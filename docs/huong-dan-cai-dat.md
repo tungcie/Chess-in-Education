@@ -76,24 +76,28 @@ Làm ở project THỬ trước, sau đó ở project THẬT.
 
 ---
 
-## D. Cloudflare Pages — đưa trang web lên mạng (miễn phí, dùng thương mại được)
+## D. Cloudflare Workers — đưa trang web lên mạng (miễn phí, dùng thương mại được)
+
+Cloudflare giờ tạo dự án mới dạng **Workers** (không phải Pages). Repo đã có sẵn file `wrangler.jsonc` để Workers chạy app.
 
 1. Đăng ký ở <https://dash.cloudflare.com/sign-up> (email + mật khẩu, xác nhận email).
-2. **Workers & Pages → Create → Pages → Connect to Git** (hoặc *Import an existing Git repository*) → cho phép Cloudflare đọc
-   GitHub → chọn repo `Chess-in-Education`.
-3. Cấu hình build:
+2. **Workers & Pages → Create → Import a repository** (Connect to Git) → cho phép Cloudflare đọc GitHub → chọn repo
+   `Chess-in-Education`.
+3. Cấu hình:
+   - Project name: `chess-in-education` (phải **trùng** dòng `"name"` trong `wrangler.jsonc`; đặt tên khác thì sửa file đó cho khớp)
    - Production branch: `main`
-   - Framework preset: `React (Vite)` (hoặc `None`)
    - Build command: `npm run build`
-   - Build output directory: `dist`
-4. **Environment variables** (mục Production):
-   - `VITE_SUPABASE_URL` = Project URL của project **thật**
-   - `VITE_SUPABASE_ANON_KEY` = anon / publishable key của project **thật**
+   - Deploy command: `npx wrangler deploy` (thường điền sẵn)
+4. **Biến lúc build** — Worker → **Settings → Build → Variables and secrets** (KHÔNG phải mục *Variables and Secrets* của runtime;
+   app đọc biến lúc build):
+   - `VITE_SUPABASE_URL` = Project URL
+   - `VITE_SUPABASE_ANON_KEY` = anon / publishable key
    - `NODE_VERSION` = `22`
 
-   Mục **Preview** (các nhánh thử): điền 2 biến đầu bằng thông tin project **thử**.
-5. **Save and Deploy**. Xong sẽ có địa chỉ dạng `https://chess-in-education.pages.dev` (sau này gắn tên miền riêng được).
-6. Quay lại Supabase (cả 2 project) → **Authentication → URL Configuration → Site URL** = địa chỉ web vừa có.
+   Giai đoạn dùng thử: điền thông tin project **thử** (`cie-thu`). Khi dùng thật thì đổi sang project **thật** rồi build lại.
+5. **Deployments → Retry / Redeploy** (hoặc đẩy code mới lên `main`). Xong sẽ có địa chỉ dạng
+   `https://chess-in-education.<tên-tài-khoản>.workers.dev` (sau này gắn tên miền riêng được).
+6. Supabase (project đang dùng) → **Authentication → URL Configuration → Site URL** = địa chỉ web vừa có.
 
 ---
 
