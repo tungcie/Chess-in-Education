@@ -1,0 +1,43 @@
+# Đưa migration + Edge Function lên Supabase. Chạy tay: GitHub → Actions → "Supabase — deploy" → Run workflow.
+# Bí mật đặt trong GitHub → Settings → Environments: "supabase-thu" và "supabase-that", mỗi môi trường 3 secret:
+#   SUPABASE_ACCESS_TOKEN, SUPABASE_PROJECT_REF, SUPABASE_DB_PASSWORD  (xem docs/huong-dan-cai-dat.md)
+# Luôn chạy "thu" trước; "that" nên bật "Required reviewers" để phải bấm duyệt.
+name: Supabase — deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Project đích'
+        type: choice
+        options: [thu, that]
+        default: thu
+      dry_run:
+        description: 'Chỉ chạy thử (in ra migration sẽ chạy, không ghi gì)'
+        type: boolean
+        default: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    environment: supabase-${{ inputs.target }}
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Kết nối project
+        run: supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+      - name: Migration (chạy thử)
+        if: inputs.dry_run
+        run: supabase db push --dry-run --password "$SUPABASE_DB_PASSWORD"
+      - name: Migration
+        if: ${{ !inputs.dry_run }}
+        run: supabase db push --yes --password "$SUPABASE_DB_PASSWORD"
+      - name: Edge Function admin-users
+        if: ${{ !inputs.dry_run }}
+        run: supabase functions deploy admin-users --project-ref "$PROJECT_REF"

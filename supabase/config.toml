@@ -1,0 +1,10 @@
+# Cấu hình Supabase CLI. project_id chỉ dùng khi chạy Supabase trên máy (supabase start).
+project_id = "chess-in-education"
+
+[auth]
+# Tắt tự đăng ký: tài khoản do quản lý / giáo viên tạo qua Edge Function admin-users.
+enable_signup = false
+
+[functions.admin-users]
+# Hàm tự kiểm người gọi bằng auth.getUser(), không dựa vào cổng kiểm JWT.
+verify_jwt = false
