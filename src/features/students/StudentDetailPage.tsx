@@ -16,7 +16,7 @@ import { useOrg } from '../auth/AuthProvider'
 import { StudentDialog } from './StudentDialog'
 import type { Guardian } from './studentsApi'
 import { ageOn, GENDER_LABELS, STATUS_LABELS, STATUS_TONE, type StudentStatus } from './studentRules'
-import { useGuardians, useLinkedAccounts, useStudent, useStudentMutations } from './useStudents'
+import { useGuardians, useLinkedAccounts, useStudent, useStudentClasses, useStudentMutations } from './useStudents'
 
 function InfoRow({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -46,6 +46,7 @@ export function StudentDetailPage() {
   const student = useStudent(org.id, id)
   const guardians = useGuardians(org.id, id)
   const accounts = useLinkedAccounts(org.id, id)
+  const classes = useStudentClasses(org.id, id)
   const m = useStudentMutations(org.id)
   const isAdmin = role === 'org_admin'
 
@@ -122,7 +123,29 @@ export function StudentDetailPage() {
       {m.setStatus.error && <Notice tone="danger">{m.setStatus.error.message}</Notice>}
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="space-y-4 lg:col-span-2">
+          <Card title="Lớp đang học">
+            {classes.isPending ? (
+              <LoadingRows rows={1} />
+            ) : classes.isError ? (
+              <ErrorState error={classes.error} onRetry={() => classes.refetch()} />
+            ) : classes.data.filter((c) => c.status === 'active' && c.class).length === 0 ? (
+              <p className="py-2 text-sm text-muted">Chưa vào lớp nào. Thêm em ở trang lớp → tab Học viên.</p>
+            ) : (
+              <ul className="divide-y divide-line">
+                {classes.data
+                  .filter((c) => c.status === 'active' && c.class)
+                  .map((c) => (
+                    <li key={c.id} className="flex items-center justify-between py-2.5">
+                      <Link to={`/lop-hoc/${c.class!.id}`} className="font-medium text-ink hover:underline">
+                        {c.class!.name}
+                      </Link>
+                      <Badge tone={c.class!.kind === 'group' ? 'brand' : 'accent'}>{c.class!.kind === 'group' ? 'Lớp nhóm' : 'Kèm 1-1'}</Badge>
+                    </li>
+                  ))}
+              </ul>
+            )}
+          </Card>
           <Card title="Thông tin">
             <dl className="divide-y divide-line sm:grid sm:grid-cols-2 sm:gap-x-6 sm:divide-y-0">
               <InfoRow label="Ngày sinh">{formatDate(s.birth_date)}</InfoRow>

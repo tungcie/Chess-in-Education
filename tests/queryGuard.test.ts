@@ -13,6 +13,15 @@ const GROWING = [
   'student_names',
   'guardians',
   'account_students',
+  'classes',
+  'class_schedule_slots',
+  'class_teachers',
+  'class_members',
+  'class_meetings',
+  'class_attendance',
+  'tuition_packages',
+  'tuition_payments',
+  'audit_log',
 ]
 
 const BOUNDED = /\.(range|single|maybeSingle|limit)\(/

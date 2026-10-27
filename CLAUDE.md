@@ -571,10 +571,22 @@ sinh lịch đã có.
 - Hồ sơ học sinh có thêm **ngày sinh đầy đủ, giới tính, địa chỉ**; chưa cần nhập từ Excel (làm sau khi cần). (27/10/2026)
 - Học phí dùng 2 cách: **theo số buổi đã học** (điểm danh Có mặt) và **gói N buổi đóng trước** → giai đoạn Học phí làm sau lớp học +
   điểm danh, giữ thứ tự mục 13. Còn chốt: giá theo gì, vắng có tính không, hạn đóng. (27/10/2026)
-- Trình độ lớp nhóm và bảng giá: …
-- Hạn đóng học phí: ngày … tháng sau
-- Có dùng gói buổi: có / không
-- Vắng có tính tiền: …
+- **Lớp + điểm danh + học phí làm chung 1 đợt, bản gọn** (27/10/2026). Thay đổi so với thiết kế ở mục 5, 6, 8:
+  - Lớp 1-1 = lớp `kind = 'private'` trong cùng bảng `classes` (không có bảng `courses` riêng); lớp nhóm `kind = 'group'`.
+  - Số buổi **không lưu DB**, app tự đánh số theo (ngày, giờ) → luôn đúng thứ tự ngày, không cần trigger đánh số lại.
+  - **Giá 1 buổi nhập tay**: lớp có `default_fee`; thêm em vào lớp điền sẵn giá đó, quản lý sửa riêng từng em
+    (`class_members.fee_per_session`). Bảng giá tự động (`tuition_rates`) làm sau.
+  - Điểm danh 3 mức: **Có mặt / Vắng có phép (không tính tiền) / Vắng không phép (tính tiền)**. Chưa điểm danh = không có dòng.
+    Mỗi dòng điểm danh chụp lại giá + hình thức thu (`fee`, `billing`) lúc chấm → đổi giá chỉ áp cho buổi sau.
+  - Thu tiền: **theo buổi** (cộng giá các buổi tính tiền) hoặc **gói N buổi** (`tuition_packages`, trừ dần theo buổi tính tiền).
+    Lần đóng tiền (`tuition_payments`) gắn với học sinh, **không gắn tháng**: còn nợ = tổng phải thu − tổng đã đóng.
+  - **Chưa có hạn đóng / tự nhắc** — admin / giáo viên tự theo dõi; làm sau.
+  - Chỉ **quản lý** tạo lớp, ghi đóng tiền, thêm gói, sửa giá. Giáo viên: điểm danh, Đã dạy, sửa buổi, thêm / cho rời học viên
+    trong lớp được phân công. Trang Học phí tạm thời chỉ quản lý thấy.
+  - Để sau: đẩy / dồn nội dung khi nghỉ, giáo trình, lịch riêng từng em, xử lý vắng (học bù / nhắc ôn), điểm danh khi mất mạng.
+- Hạn đóng học phí: chưa dùng (27/10/2026)
+- Có dùng gói buổi: **có** (27/10/2026)
+- Vắng có tính tiền: **vắng có phép (báo trước) không tính; vắng không phép tính** (27/10/2026)
 - Trường trả tiền cả lớp (theo sĩ số) hay phụ huynh trả từng em: …
 - Ngày nghỉ chung (Tết, hè, lịch thi): …
 - Sửa lần đóng ghi nhầm: lần đóng âm "Điều chỉnh" / sửa trong SQL Editor: …

@@ -6,6 +6,7 @@ import {
   getStudent,
   listGuardians,
   listLinkedAccounts,
+  listStudentClasses,
   listStudents,
   saveGuardian,
   setStudentStatus,
@@ -32,6 +33,10 @@ export function useGuardians(orgId: string, studentId: string) {
 
 export function useLinkedAccounts(orgId: string, studentId: string) {
   return useQuery({ queryKey: [...studentsKey(orgId), studentId, 'accounts'], queryFn: () => listLinkedAccounts(studentId) })
+}
+
+export function useStudentClasses(orgId: string, studentId: string) {
+  return useQuery({ queryKey: [orgId, 'classes', 'student', studentId], queryFn: () => listStudentClasses(studentId) })
 }
 
 /** Mọi thao tác ghi hồ sơ: xong thì tải lại toàn bộ dữ liệu học viên của đơn vị. */

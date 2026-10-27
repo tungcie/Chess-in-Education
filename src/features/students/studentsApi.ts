@@ -169,7 +169,10 @@ export async function setStudentStatus(id: string, status: StudentStatus): Promi
 
 export async function deleteStudent(id: string): Promise<void> {
   const { data, error } = await supabase.from('students').delete().eq('id', id).select('id')
-  if (error) throw error
+  if (error) {
+    if (error.code === '23503') throw new Error('Em đã có điểm danh / học phí — chuyển “Đã nghỉ” thay vì xóa để giữ lịch sử')
+    throw error
+  }
   if (!data?.length) throw new Error('Bạn không có quyền xóa hồ sơ này')
 }
 
@@ -210,4 +213,22 @@ export async function unlinkAccount(linkId: string): Promise<void> {
   const { data, error } = await supabase.from('account_students').delete().eq('id', linkId).select('id')
   if (error) throw error
   if (!data?.length) throw new Error('Bạn không có quyền gỡ tài khoản')
+}
+
+export interface StudentClass {
+  id: string
+  status: 'active' | 'removed'
+  class: { id: string; name: string; kind: 'group' | 'private'; status: string } | null
+}
+
+/** Các lớp em đang / đã học (1 em chỉ vài lớp). */
+export async function listStudentClasses(studentId: string): Promise<StudentClass[]> {
+  const { data, error } = await supabase
+    .from('class_members')
+    .select('id, status, class:classes(id, name, kind, status)')
+    .eq('student_id', studentId)
+    .order('created_at')
+    .limit(50)
+  if (error) throw error
+  return (data ?? []) as unknown as StudentClass[]
 }
