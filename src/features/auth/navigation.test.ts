@@ -10,9 +10,9 @@ describe('menu theo vai trò', () => {
     ])
   })
 
-  it('giáo viên không có Tổng quan, Giáo trình, Đơn vị, Giáo viên', () => {
+  it('giáo viên không có Tổng quan, Giáo trình, Đơn vị, Giáo viên, Học phí', () => {
     const items = keys(sidebarItems('teacher'))
-    for (const k of ['overview', 'curriculum', 'org', 'teachers']) expect(items).not.toContain(k)
+    for (const k of ['overview', 'curriculum', 'org', 'teachers', 'tuition']) expect(items).not.toContain(k)
     expect(items).toContain('accounts') // tạo tài khoản học sinh
   })
 

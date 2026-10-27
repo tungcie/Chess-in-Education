@@ -37,6 +37,8 @@ export type CreateAccountInput = {
   full_name: string
   password: string
   phone?: string
+  /** Gắn tài khoản học sinh / phụ huynh với hồ sơ học viên */
+  student_id?: string
 } & ({ username: string; email?: undefined } | { email: string; username?: undefined })
 
 type AdminUsersBody =

@@ -39,13 +39,13 @@ export interface NavItem {
 }
 
 export const NAV: Record<NavKey, NavItem> = {
-  overview: { key: 'overview', label: 'Tổng quan', shortLabel: 'Tổng quan', path: '/tong-quan', icon: 'dashboard', phase: 3 },
-  today: { key: 'today', label: 'Hôm nay', shortLabel: 'Hôm nay', path: '/hom-nay', icon: 'sun', phase: 3 },
-  calendar: { key: 'calendar', label: 'Lịch tuần', shortLabel: 'Lịch', path: '/lich', icon: 'calendar', phase: 3 },
-  students: { key: 'students', label: 'Học viên', shortLabel: 'Học viên', path: '/hoc-vien', icon: 'users', phase: 2 },
-  classes: { key: 'classes', label: 'Lớp học', shortLabel: 'Lớp học', path: '/lop-hoc', icon: 'school', phase: 3 },
+  overview: { key: 'overview', label: 'Tổng quan', shortLabel: 'Tổng quan', path: '/tong-quan', icon: 'dashboard', phase: 7 },
+  today: { key: 'today', label: 'Hôm nay', shortLabel: 'Hôm nay', path: '/hom-nay', icon: 'sun' },
+  calendar: { key: 'calendar', label: 'Lịch tuần', shortLabel: 'Lịch', path: '/lich', icon: 'calendar' },
+  students: { key: 'students', label: 'Học viên', shortLabel: 'Học viên', path: '/hoc-vien', icon: 'users' },
+  classes: { key: 'classes', label: 'Lớp học', shortLabel: 'Lớp học', path: '/lop-hoc', icon: 'school' },
   curriculum: { key: 'curriculum', label: 'Giáo trình', shortLabel: 'Giáo trình', path: '/giao-trinh', icon: 'book', phase: 5 },
-  tuition: { key: 'tuition', label: 'Học phí', shortLabel: 'Học phí', path: '/hoc-phi', icon: 'wallet', phase: 6 },
+  tuition: { key: 'tuition', label: 'Học phí', shortLabel: 'Học phí', path: '/hoc-phi', icon: 'wallet' },
   teachers: { key: 'teachers', label: 'Giáo viên', shortLabel: 'Giáo viên', path: '/giao-vien', icon: 'badge', phase: 7 },
   progress: { key: 'progress', label: 'Tiến độ', shortLabel: 'Tiến độ', path: '/tien-do', icon: 'chart', phase: 5 },
   accounts: { key: 'accounts', label: 'Tài khoản', shortLabel: 'Tài khoản', path: '/tai-khoan', icon: 'key' },
@@ -57,7 +57,7 @@ export type UiRole = OrgRole
 
 const SIDEBAR: Record<UiRole, NavKey[]> = {
   org_admin: ['overview', 'today', 'calendar', 'students', 'classes', 'curriculum', 'tuition', 'teachers', 'accounts', 'org'],
-  teacher: ['today', 'calendar', 'classes', 'students', 'tuition', 'accounts'],
+  teacher: ['today', 'calendar', 'classes', 'students', 'accounts'],
   student: ['today', 'calendar', 'classes', 'progress'],
   parent: ['today', 'calendar', 'classes', 'progress'],
 }

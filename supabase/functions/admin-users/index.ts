@@ -136,6 +136,22 @@ Deno.serve(async (req) => {
         if (invalid) throw new HttpError(400, invalid)
       }
 
+      // Gắn tài khoản với hồ sơ học viên (không bắt buộc): chỉ học sinh / phụ huynh, hồ sơ cùng đơn vị,
+      // người tạo phải xem được hồ sơ đó (quản lý: mọi em; giáo viên: em mình tạo).
+      const studentId = optionalText(body.student_id)
+      if (studentId) {
+        if (role !== 'student' && role !== 'parent') throw new HttpError(400, 'Chỉ tài khoản học sinh / phụ huynh gắn được với hồ sơ')
+        const { data: student, error: sErr } = await admin
+          .from('students')
+          .select('id, created_by')
+          .eq('id', studentId)
+          .eq('org_id', orgId)
+          .maybeSingle()
+        if (sErr) throw sErr
+        const canLink = actor.isSuperAdmin || actor.role === 'org_admin' || student?.created_by === actor.userId
+        if (!student || !canLink) throw new HttpError(403, 'Bạn không có quyền gắn tài khoản với hồ sơ này')
+      }
+
       const { data: created, error: createErr } = await admin.auth.admin.createUser({
         email: email ?? usernameToEmail(username!),
         password,
@@ -155,6 +171,18 @@ Deno.serve(async (req) => {
         // Không để lại tài khoản mồ côi (có user mà không thuộc đơn vị nào)
         await admin.auth.admin.deleteUser(newId)
         throw memberErr
+      }
+      if (studentId) {
+        const { error: linkErr } = await admin.from('account_students').insert({
+          org_id: orgId,
+          user_id: newId,
+          student_id: studentId,
+          relation: role === 'parent' ? 'parent' : 'self',
+        })
+        if (linkErr) {
+          await admin.auth.admin.deleteUser(newId)
+          throw linkErr
+        }
       }
       return json({ ok: true, user_id: newId })
     }

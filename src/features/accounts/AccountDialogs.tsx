@@ -73,18 +73,24 @@ export function CreateAccountDialog({
   onOpenChange,
   orgId,
   roles,
+  student,
+  onCreated,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   orgId: string
   /** Vai trò được tạo (đã lọc theo quyền) — không dùng ô disabled vì react-hook-form bỏ giá trị ô disabled */
   roles: OrgRole[]
+  /** Mở từ hồ sơ học viên: chỉ cho học sinh / phụ huynh, điền sẵn tên, gắn tài khoản với hồ sơ */
+  student?: { id: string; full_name: string }
+  onCreated?: () => void
 }) {
   const mutation = useAdminUsers(orgId)
   const [created, setCreated] = useState<string | null>(null)
+  const roleOptions = student ? roles.filter((r) => r === 'student' || r === 'parent') : roles
   const defaults = (): CreateValues => ({
-    role: roles.includes('student') ? 'student' : roles[0],
-    full_name: '',
+    role: roleOptions.includes('student') ? 'student' : roleOptions[0],
+    full_name: student?.full_name ?? '',
     login_type: 'username',
     username: '',
     email: '',
@@ -118,12 +124,19 @@ export function CreateAccountDialog({
   }
 
   const onSubmit = (v: CreateValues) => {
-    const base = { role: v.role, full_name: v.full_name, password: v.password, phone: v.phone || undefined }
+    const base = {
+      role: v.role,
+      full_name: v.full_name,
+      password: v.password,
+      phone: v.phone || undefined,
+      student_id: student?.id,
+    }
     const input = v.login_type === 'username' ? { ...base, username: v.username } : { ...base, email: v.email }
     mutation.mutate(
       { action: 'create', ...input },
       {
-        onSuccess: () =>
+        onSuccess: () => {
+          onCreated?.()
           setCreated(
             loginMessage({
               fullName: v.full_name,
@@ -131,7 +144,8 @@ export function CreateAccountDialog({
               password: v.password,
               siteUrl: window.location.origin,
             }),
-          ),
+          )
+        },
       },
     )
   }
@@ -140,7 +154,7 @@ export function CreateAccountDialog({
     <Dialog
       open={open}
       onOpenChange={close}
-      title={created ? 'Đã tạo tài khoản' : 'Tạo tài khoản'}
+      title={created ? 'Đã tạo tài khoản' : student ? `Tạo tài khoản cho ${student.full_name}` : 'Tạo tài khoản'}
       description={created ? 'Gửi thông tin này cho người dùng. Mật khẩu chỉ hiện một lần.' : undefined}
       footer={
         created ? (
@@ -165,7 +179,7 @@ export function CreateAccountDialog({
           <Field label="Vai trò">
             {(id) => (
               <Select id={id} {...register('role')}>
-                {roles.map((r) => (
+                {roleOptions.map((r) => (
                   <option key={r} value={r}>
                     {ROLE_LABELS[r]}
                   </option>
