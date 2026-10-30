@@ -175,7 +175,7 @@ function hookArtSVG(t) {
     <radialGradient id="hg"><stop offset="0" stop-color="#8EF7FF" stop-opacity=".9"/><stop offset="1" stop-color="#7B2FFF" stop-opacity="0"/></radialGradient></defs>
     <circle cx="220" cy="220" r="210" fill="url(#hg)"/>
     <g style="filter:drop-shadow(0 0 12px #5EF3FF)">${bolts}</g>
-    <use href="#wR" x="90" y="${80 + bob}" width="260" height="260" style="filter:drop-shadow(0 0 26px #fff) drop-shadow(0 0 40px #B46CFF)"/></svg>`;
+    <use href="#${TL.hookPiece || 'wR'}" x="90" y="${80 + bob}" width="260" height="260" style="filter:drop-shadow(0 0 26px #fff) drop-shadow(0 0 40px #B46CFF)"/></svg>`;
 }
 function drawBg(t) {
   if (TL.theme === 'magic') return drawMagicBg(t);
@@ -228,8 +228,9 @@ function heatSVG(heats, t) {
     const [x, y] = sqXY(sq), f = sq.charCodeAt(0) - 97, r = +sq[1] - 1;
     const k = back((t - c.t0 - (f + (7 - r)) * c.stagger) / .32);
     if (k <= 0) continue;
-    const fill = c.piece === 'R' ? ROOK_COL : c.piece === 'B' ? RING_COL[c.ring] : `url(#qg${c.ring})`;
-    const glow = c.ring === 3 && c.piece !== 'R' ? `<rect x="${x + 2}" y="${y + 2}" width="${SQ - 4}" height="${SQ - 4}" rx="18" fill="none" stroke="#FFE38A" stroke-width="${4 + 3 * Math.sin(t * 6) ** 2}"/>` : '';
+    const KN = { 2: '#E2283F', 3: '#F07A2A', 4: '#E8B21E', 6: '#22A866', 8: '#2B8FE8' };
+    const fill = c.piece === 'R' ? ROOK_COL : c.piece === 'B' ? RING_COL[c.ring] : c.piece === 'N' ? KN[c.n] : `url(#qg${c.ring})`;
+    const glow = c.ring === 3 && !'RN'.includes(c.piece) ? `<rect x="${x + 2}" y="${y + 2}" width="${SQ - 4}" height="${SQ - 4}" rx="18" fill="none" stroke="#FFE38A" stroke-width="${4 + 3 * Math.sin(t * 6) ** 2}"/>` : '';
     s += `<g transform="translate(${x + SQ / 2} ${y + SQ / 2}) scale(${k}) translate(${-x - SQ / 2} ${-y - SQ / 2})">
       <rect x="${x + 6}" y="${y + 6}" width="${SQ - 12}" height="${SQ - 12}" rx="16" fill="${fill}" stroke="rgba(255,255,255,.55)" stroke-width="3"/>${glow}`;
     if (c.piece === 'Q') {
@@ -290,6 +291,91 @@ function beamSVG(o, dt, layer) {
   }
   return s;
 }
+// Vùng bàn cờ nhỏ (ví dụ 3×4 tính từ a1): phóng to khung nhìn vào vùng đó
+const FULL_VB = [-14, -14, BS + 28, BS + 28];
+function regionVB(o) {
+  if (!o) return FULL_VB;
+  const pad = 26, w = o.w * SQ, h = o.h * SQ, side = Math.max(w, h) + pad * 2;
+  return [w / 2 - side / 2, BS - h / 2 - side / 2, side, side];
+}
+function viewBoxAt(all, t) {
+  const regs = all.filter(o => o.type === 'region');
+  const cur = regs[regs.length - 1], prev = regs[regs.length - 2];
+  if (!cur) return FULL_VB;
+  const a = regionVB(prev && !prev.full ? prev : null), b = regionVB(cur.full ? null : cur), k = ease((t - cur.t) / .7);
+  return a.map((v, i) => lerp(v, b[i], k));
+}
+function regionMask(all, t) {
+  const cur = all.filter(o => o.type === 'region').pop();
+  if (!cur || cur.full) return '';
+  let s = '';
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+    if (c < cur.w && 7 - r < cur.h) continue;
+    s += `<rect x="${c * SQ - 1}" y="${r * SQ - 1}" width="${SQ + 2}" height="${SQ + 2}" fill="#0B0820"/>`;
+  }
+  const k = clamp((t - cur.t) / .5);
+  s += `<rect x="-6" y="${BS - cur.h * SQ - 6}" width="${cur.w * SQ + 12}" height="${cur.h * SQ + 12}" rx="10" fill="none" stroke="#FFD54A" stroke-width="${10 * k}"/>`;
+  if (cur.label) s += `<text x="${cur.w * SQ / 2}" y="${BS - cur.h * SQ - 20}" text-anchor="middle" font-size="${Math.max(30, cur.h * 9)}" font-weight="900" fill="#FFE38A" font-family="BVP" opacity="${k}">${cur.label}</text>`;
+  return s;
+}
+// Dung nham + kho báu
+function mazeSVG(o, t) {
+  let s = '';
+  o.lava.forEach((sq, i) => {
+    const [x, y] = sqXY(sq), k = back((t - o.t - i * .04) / .3);
+    if (k <= 0) return;
+    const b = (t * 1.3 + i * .37) % 1;
+    s += `<g transform="translate(${x + SQ / 2} ${y + SQ / 2}) scale(${k})"><rect x="${-SQ / 2 + 3}" y="${-SQ / 2 + 3}" width="${SQ - 6}" height="${SQ - 6}" rx="10" fill="url(#lava)"/>
+      <circle cx="${-18 + (i * 13) % 30}" cy="${22 - b * 46}" r="${8 * (1 - b)}" fill="#FFD27A" opacity="${1 - b}"/>
+      <circle cx="${16 - (i * 7) % 20}" cy="${10 - ((b + .5) % 1) * 40}" r="${6 * (1 - (b + .5) % 1)}" fill="#FFE9B0" opacity=".8"/></g>`;
+  });
+  if (o.goal) {
+    const [x, y] = sqXY(o.goal), p = 1 + .08 * Math.sin(t * 6);
+    const star = Array.from({ length: 10 }, (_, i) => { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 18 : 42; return `${Math.cos(a) * r},${Math.sin(a) * r}`; }).join(' ');
+    s += `<g transform="translate(${x + SQ / 2} ${y + SQ / 2}) scale(${p})"><circle r="52" fill="rgba(255,213,74,.35)"/><polygon points="${star}" fill="#FFD54A" stroke="#fff" stroke-width="4"/></g>`;
+  }
+  return s;
+}
+// Loang số bước: lớp k hiện ở thời điểm t0 + k·step
+function floodSVG(o, t) {
+  let s = '';
+  for (const [sq, d] of Object.entries(o.dist)) {
+    const k = back((t - o.t - d * (o.step || .4)) / .25);
+    if (k <= 0 || d === 0) continue;
+    const [x, y] = sqXY(sq), hue = 190 - d * 14;
+    s += `<g transform="translate(${x + SQ / 2} ${y + SQ / 2}) scale(${k})"><rect x="-40" y="-40" width="80" height="80" rx="18" fill="hsla(${hue},85%,55%,.82)" stroke="#fff" stroke-width="3"/>
+      <text y="16" text-anchor="middle" font-size="44" font-weight="900" fill="#fff" font-family="BVP">${d}</text></g>`;
+  }
+  return s;
+}
+// Đường đi / hành trình của Mã: đánh số ô đã qua, vẽ đường nối, Mã nhảy theo
+function pathSVG(o, t) {
+  const sq = o.squares, step = o.step || .5, dur = Math.min(.35, step * .8), n = sq.length;
+  const c = q => sqXY(q).map(v => v + SQ / 2);
+  const done = clamp(Math.floor((t - o.t) / step) + 1, 0, n);   // số ô đã đáp xuống (kể cả ô xuất phát)
+  let s = '', line = '';
+  for (let i = 0; i < done; i++) {
+    const [x, y] = c(sq[i]);
+    line += `${i ? 'L' : 'M'} ${x} ${y} `;
+  }
+  // đoạn đang bay
+  const seg = Math.floor((t - o.t) / step), into = (t - o.t) - seg * step - (step - dur);
+  let kx, ky, lift = 0;
+  if (seg >= 0 && seg < n - 1 && into > 0) {
+    const [x1, y1] = c(sq[seg]), [x2, y2] = c(sq[seg + 1]), k = ease(into / dur);
+    kx = lerp(x1, x2, k); ky = lerp(y1, y2, k); lift = Math.sin(k * Math.PI);
+    line += `L ${kx} ${ky}`;
+  } else { [kx, ky] = c(sq[Math.min(n - 1, Math.max(0, done - 1))]); }
+  s += `<path d="${line}" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="${o.thin ? 5 : 8}" stroke-linejoin="round" stroke-linecap="round" style="filter:drop-shadow(0 0 6px rgba(94,243,255,.9))"/>`;
+  if (o.numbers !== false) for (let i = 0; i < done; i++) {
+    const [x, y] = c(sq[i]), hue = (i / Math.max(1, n - 1)) * 300, k = back((t - o.t - i * step) / .25);
+    s += `<g transform="translate(${x} ${y}) scale(${k})"><circle r="${o.thin ? 26 : 30}" fill="hsl(${hue},85%,52%)" stroke="#fff" stroke-width="4"/>
+      <text y="${o.thin ? 9 : 11}" text-anchor="middle" font-size="${o.thin ? 26 : 32}" font-weight="900" fill="#fff" font-family="BVP">${i + 1}</text></g>`;
+  }
+  const hideKnight = o.hideKnightAtEnd && done >= n && t - o.t > n * step;
+  if (!hideKnight) s += `<g transform="translate(${kx} ${ky - lift * 30}) scale(${1 + lift * .2})" style="filter:drop-shadow(0 12px 8px rgba(0,0,0,.4))">${pieceUse('N', -SQ / 2, -SQ / 2)}</g>`;
+  return s;
+}
 function boardSVG(t, scene) {
   // 1) tìm sự kiện bàn cờ cuối cùng đã bắt đầu
   const evs = TL.boardEvents; let k = -1;
@@ -312,8 +398,11 @@ function boardSVG(t, scene) {
   const magic = TL.theme === 'magic';
   const LIGHT = TL.boardStyle.light || (magic ? '#E9E1FA' : '#F1E2C2'), DARK = TL.boardStyle.dark || (magic ? '#7A66B8' : '#B58A55');
   const frame = magic ? ['#8EF7FF', '#7B2FFF', '#FF5EC8'] : ['#FFE38A', '#C9921A', '#FFD54A'];
-  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-14 -14 ${BS + 28} ${BS + 28}" width="100%" height="100%">
+  const { all: allOv } = overlaysAt(t, scene);
+  const vb = viewBoxAt(allOv, t);
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb.join(' ')}" width="100%" height="100%">
     <defs>${PIECES}<linearGradient id="fr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${frame[0]}"/><stop offset=".5" stop-color="${frame[1]}"/><stop offset="1" stop-color="${frame[2]}"/></linearGradient>
+    <radialGradient id="lava" cx=".5" cy=".5" r=".7"><stop offset="0" stop-color="#FFB13B"/><stop offset=".55" stop-color="#F0461F"/><stop offset="1" stop-color="#8A1208"/></radialGradient>
     <filter id="glow" filterUnits="userSpaceOnUse" x="-60" y="-60" width="1050" height="1050"><feGaussianBlur stdDeviation="12"/></filter></defs>
     <rect x="-14" y="-14" width="${BS + 28}" height="${BS + 28}" rx="18" fill="url(#fr)"/>`;
   for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
@@ -331,6 +420,8 @@ function boardSVG(t, scene) {
     for (const sq of o.squares) { const [x, y] = sqXY(sq);
       s += `<rect x="${x + 4}" y="${y + 4}" width="${SQ - 8}" height="${SQ - 8}" rx="10" fill="rgba(${COL[o.color]},${pulse * k})" stroke="rgba(${COL[o.color]},${k})" stroke-width="6"/>`; }
   }
+  for (const o of allOv) if (o.type === 'maze') s += mazeSVG(o, t);
+  for (const o of active) if (o.type === 'flood') s += floodSVG(o, t);
   const heats = active.filter(o => o.type === 'heat');
   if (heats.length) s += heatSVG(heats, t);
   for (const o of active) if (o.type === 'beam') s += beamSVG(o, t - o.t, 'line');
@@ -354,6 +445,7 @@ function boardSVG(t, scene) {
   }
   for (const o of active) {
     if (o.type === 'beam') s += beamSVG(o, t - o.t, 'mark');
+    if (o.type === 'path') s += pathSVG(o, t);
     if (o.type === 'arrow') s += arrowSVG(o.from, o.to, o.color, (t - o.t) / .45);
     if (o.type === 'dots') o.squares.forEach((sq, i) => {
       const k = back((t - o.t - i * .09) / .3); if (k <= 0) return;
@@ -369,7 +461,7 @@ function boardSVG(t, scene) {
         <path d="M-11 0 L-3 9 L13 -10" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>`;
     }
   }
-  return s + '</svg>';
+  return s + regionMask(allOv, t) + '</svg>';
 }
 
 // ===== Phụ đề: tô vàng tên ô cờ và tên quân =====
@@ -423,7 +515,8 @@ function renderAt(t) {
   const st = active.filter(o => o.type === 'sticker').pop();
   if (st) {
     const k = back((t - st.t) / .35), color = STICKER[st.color] || STICKER.red;
-    $('sticker').innerHTML = `<span style="background:${color};transform:rotate(-6deg) scale(${k})">${st.text}</span>`;
+    const fs = st.text.length > 16 ? 64 : st.text.length > 11 ? 78 : 92;   // tem dài thì chữ nhỏ lại cho khỏi tràn
+    $('sticker').innerHTML = `<span style="background:${color};font-size:${fs}px;transform:rotate(-6deg) scale(${k})">${st.text}</span>`;
     $('sticker').style.top = isHook ? '1390px' : '760px';
     $('sticker').style.opacity = clamp((t - st.t) / .15);
   } else $('sticker').style.opacity = 0;
@@ -527,7 +620,8 @@ window.setup = (timeline, pieces) => {
   TL.boardStyle = TL.boardStyle || {};
   const bb = TL.boardBox || { x: 60, y: 400, size: 900 };
   Object.assign($('board').style, { left: bb.x + 'px', top: bb.y + 'px', width: bb.size + 'px', height: bb.size + 'px' });
-  $('label').style.top = (bb.y + bb.size + 14) + 'px'; $('label').style.left = bb.x + 'px';
+  $('label').style.top = (bb.y + bb.size + 14) + 'px'; $('label').style.left = 'auto';
+  $('label').style.right = (1080 - bb.x - bb.size) + 'px';   // canh phải để nhân vật không che
   $('equation').style.top = (bb.y - 104) + 'px';
   document.body.classList.toggle('magic', TL.theme === 'magic');
   const ec = TL.endcard || {};

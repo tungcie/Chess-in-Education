@@ -139,6 +139,48 @@ def ring(sq):
     return min(f, 7 - f, r, 7 - r)
 
 
+KNIGHT = [(1, 2), (2, 1), (-1, 2), (-2, 1), (1, -2), (2, -1), (-1, -2), (-2, -1)]
+
+
+def knight_bfs(start, lava=(), w=8, h=8):
+    """Số bước Mã cần để tới từng ô (không được đáp xuống ô dung nham)."""
+    s = chess.parse_square(start)
+    s = (chess.square_file(s), chess.square_rank(s))
+    bad = {(chess.square_file(q), chess.square_rank(q)) for q in map(chess.parse_square, lava)}
+    dist, par, queue = {s: 0}, {}, [s]
+    for c in queue:
+        for a, b in KNIGHT:
+            x = (c[0] + a, c[1] + b)
+            if 0 <= x[0] < w and 0 <= x[1] < h and x not in dist and x not in bad:
+                dist[x], par[x] = dist[c] + 1, c
+                queue.append(x)
+    name = lambda c: chess.square_name(chess.square(*c))
+    return {name(c): d for c, d in dist.items()}, {name(c): name(p) for c, p in par.items()}
+
+
+def knight_tour(w, h, start="a1"):
+    """Hành trình Mã đi hết bàn w×h, mỗi ô đúng một lần (Warnsdorff + quay lui). None nếu không có."""
+    s = chess.parse_square(start)
+    path, seen = [(chess.square_file(s), chess.square_rank(s))], set()
+    seen.add(path[0])
+
+    def nbrs(c):
+        return [(c[0] + a, c[1] + b) for a, b in KNIGHT
+                if 0 <= c[0] + a < w and 0 <= c[1] + b < h and (c[0] + a, c[1] + b) not in seen]
+
+    def dfs():
+        if len(path) == w * h:
+            return True
+        for c in sorted(nbrs(path[-1]), key=lambda c: len(nbrs(c))):   # ô ít lối ra nhất trước
+            seen.add(c); path.append(c)
+            if dfs():
+                return True
+            seen.discard(c); path.pop()
+        return False
+
+    return [chess.square_name(chess.square(*c)) for c in path] if dfs() else None
+
+
 def board_map(board):
     return {chess.square_name(sq): p.symbol() for sq, p in board.piece_map().items()}
 
@@ -263,11 +305,37 @@ def main(ep_dir):
                         o["cells"] = {chess.square_name(q): {"ring": ring(q), "n": mobility(o["piece"], q),
                                                              "r": mobility("R", q), "b": mobility("B", q)}
                                       for q in chess.SQUARES if ring(q) in rings}
+                    if o["type"] == "flood":
+                        o["dist"], _ = knight_bfs(o["from"], o.get("lava", []))
+                    if o["type"] == "path" and "to" in o:
+                        _, par = knight_bfs(o["from"], o.get("lava", []))
+                        sq_ = [o["to"]]
+                        while sq_[-1] != o["from"]:
+                            sq_.append(par[sq_[-1]])
+                        o["squares"] = sq_[::-1]
+                    if o["type"] == "path" and "tour" in o:
+                        w, h = o["tour"]
+                        o["squares"] = knight_tour(w, h, o.get("from", "a1"))
+                        assert o["squares"], f"Không có hành trình Mã trên bàn {w}x{h}"
+                    if o["type"] == "check":
+                        # câu đố giao cho người xem: bắt buộc phải có lời giải, nếu không thì dừng dựng
+                        w, h = o["tour"]
+                        starts = [o["from"]] if "from" in o else [chess.square_name(chess.square(f, r))
+                                                                 for f in range(w) for r in range(h)]
+                        bad = [q for q in starts if not knight_tour(w, h, q)]
+                        assert not bad, f"Câu đố {w}x{h} không giải được khi xuất phát từ {bad}"
+                    if o["type"] == "path":   # kiểm tra mọi bước đều là bước nhảy của Mã
+                        for a_, b_ in zip(o["squares"], o["squares"][1:]):
+                            qa, qb = chess.parse_square(a_), chess.parse_square(b_)
+                            assert chess.square_knight_distance(qa, qb) == 1, (a_, b_)
                     if o["type"] == "beam":
-                        o["rays"] = rays(o["from"], [(1, 0), (-1, 0), (0, 1), (0, -1)])
+                        dirs = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+                        if o.get("dirs") == "queen":   # thêm 4 đường chéo: "tưởng tượng quân này là Hậu"
+                            dirs += [(1, 1), (1, -1), (-1, 1), (-1, -1)]
+                        o["rays"] = rays(o["from"], dirs)
                     o["t"] = round(et, 3)
                     overlays.append(o)
-            t += dur + gap
+            t += dur + gap + ph.get("pause", 0)   # "pause": giữ thêm vài giây cho hoạt cảnh chạy xong
         scenes.append({"id": scene["id"], "t0": round(s_start, 3), "t1": round(t, 3),
                        "header": scene.get("header", {}), "layout": scene.get("layout", "board"),
                        "board": scene.get("board", {})})
@@ -295,10 +363,19 @@ def main(ep_dir):
         i = int(at * SR)
         sfx[i:i + len(x)] += x[: max(0, n - i)]
 
+    for o in overlays:          # tiếng "cộp" mỗi lần Mã đáp xuống
+        if o["type"] == "path":
+            step = o.get("step", 0.5)
+            for i in range(1, len(o["squares"])):
+                j = int((o["t"] + i * step) * SR)
+                sfx[j:j + len(clk)] += clk[: max(0, n - j)]
     if script.get("theme") == "magic":
         for o in overlays:
             if o["type"] in cue and o.get("sound", True):
                 add(cue[o["type"]], o["t"])
+            if o["type"] == "flood":
+                for k in range(1, max(o["dist"].values()) + 1):
+                    add("tick", o["t"] + k * o.get("step", 0.4))
         for ev in board_events:
             if ev["kind"] == "move" and not ev["boom"]:
                 add("whoosh", ev["t"])
@@ -322,6 +399,7 @@ def main(ep_dir):
     timeline = {
         "title": script["title"], "fps": FPS, "duration": round(total, 3),
         "character": script.get("character", "coach"), "theme": script.get("theme", "gold"),
+        "hookPiece": script.get("hookPiece", "wR"),
         "endcard": script.get("endcard", {}),
         "boardBox": script.get("boardBox", {"x": 60, "y": 400, "size": 900}),
         "boardStyle": script.get("boardStyle", {}),

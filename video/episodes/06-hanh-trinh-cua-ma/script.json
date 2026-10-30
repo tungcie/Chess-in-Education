@@ -1,0 +1,328 @@
+{
+  "title": "Hành trình của Mã: đi hết bàn cờ, mỗi ô một lần",
+  "character": "coach",
+  "theme": "magic",
+  "music": "magic",
+  "hookPiece": "wN",
+  "voice": "vi-VN-NamMinhNeural",
+  "rate": "+8%",
+  "gap": 0.18,
+  "scenes": [
+    {
+      "id": "hook",
+      "layout": "hook",
+      "header": {
+        "chip": "CÂU ĐỐ TỪ 1759",
+        "title": "MÃ ĐI HẾT 64 Ô,\nMỖI Ô 1 LẦN?"
+      },
+      "phrases": [
+        {
+          "text": "Con Mã có thể đi hết 64 ô, mỗi ô chỉ đúng một lần không?",
+          "say": "Con Mã có thể đi hết sáu mươi tư ô, mỗi ô chỉ đúng một lần không?",
+          "events": [
+            {
+              "type": "flash"
+            }
+          ]
+        },
+        {
+          "text": "Nhà toán học Euler đã nghiên cứu câu đố này từ năm 1759!",
+          "say": "Nhà toán học Ơ-le đã nghiên cứu câu đố này từ năm mười bảy năm mươi chín!",
+          "events": [
+            {
+              "type": "sticker",
+              "text": "EULER · 1759",
+              "color": "purple",
+              "word": 3
+            }
+          ]
+        },
+        {
+          "text": "Mình sẽ đi từ dễ tới khó nhé.",
+          "events": [
+            {
+              "type": "magic",
+              "word": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3x3",
+      "header": {
+        "chip": "CẤP 1",
+        "title": "Bàn 3 × 3"
+      },
+      "board": {
+        "fen": "8/8/8/8/8/8/8/N7 w - - 0 1"
+      },
+      "phrases": [
+        {
+          "text": "Bắt đầu nhỏ thôi: bàn 3 × 3, có 9 ô.",
+          "say": "Bắt đầu nhỏ thôi: bàn ba nhân ba, có chín ô.",
+          "events": [
+            {
+              "type": "region",
+              "w": 3,
+              "h": 3
+            },
+            {
+              "type": "dots",
+              "from": "a1",
+              "word": 6
+            }
+          ]
+        },
+        {
+          "text": "Không thể! Ô ở giữa không có đường nào để Mã nhảy vào.",
+          "events": [
+            {
+              "type": "clear"
+            },
+            {
+              "type": "highlight",
+              "squares": [
+                "b2"
+              ],
+              "color": "red",
+              "word": 3
+            },
+            {
+              "type": "sticker",
+              "text": "KHÔNG THỂ!",
+              "color": "red",
+              "word": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3x4",
+      "header": {
+        "chip": "CẤP 2",
+        "title": "Bàn 3 × 4"
+      },
+      "board": {
+        "fen": "8/8/8/8/8/8/8/N7 w - - 0 1"
+      },
+      "phrases": [
+        {
+          "text": "Thêm một cột: bàn 3 × 4, xuất phát từ góc. Bạn thử tìm trước nhé!",
+          "say": "Thêm một cột: bàn ba nhân bốn, xuất phát từ góc. Bạn thử tìm trước nhé!",
+          "events": [
+            {
+              "type": "region",
+              "w": 4,
+              "h": 3
+            },
+            {
+              "type": "check",
+              "tour": [
+                4,
+                3
+              ],
+              "from": "a1"
+            }
+          ]
+        },
+        {
+          "text": "Ba… hai… một!",
+          "say": "Ba. Hai. Một!",
+          "events": [
+            {
+              "type": "countdown",
+              "n": 3,
+              "word": 0
+            },
+            {
+              "type": "countdown",
+              "n": 2,
+              "word": 1
+            },
+            {
+              "type": "countdown",
+              "n": 1,
+              "word": 2
+            }
+          ]
+        },
+        {
+          "text": "Đây! Đủ 12 ô, không sót ô nào.",
+          "say": "Đây! Đủ mười hai ô, không sót ô nào.",
+          "events": [
+            {
+              "type": "fen",
+              "fen": "8/8/8/8/8/8/8/8 w - - 0 1"
+            },
+            {
+              "type": "path",
+              "from": "a1",
+              "tour": [
+                4,
+                3
+              ],
+              "step": 0.38
+            }
+          ]
+        },
+        {
+          "text": "Một hành trình trọn vẹn!",
+          "events": [
+            {
+              "type": "sticker",
+              "text": "12/12 ✓",
+              "color": "green",
+              "word": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "5x5",
+      "header": {
+        "chip": "CẤP 3",
+        "title": "Bàn 5 × 5"
+      },
+      "board": {
+        "fen": "8/8/8/8/8/8/8/8 w - - 0 1"
+      },
+      "phrases": [
+        {
+          "text": "Lên bàn 5 × 5: 25 ô, vẫn làm được!",
+          "say": "Lên bàn năm nhân năm: hai mươi lăm ô, vẫn làm được!",
+          "events": [
+            {
+              "type": "region",
+              "w": 5,
+              "h": 5
+            },
+            {
+              "type": "path",
+              "from": "a1",
+              "tour": [
+                5,
+                5
+              ],
+              "step": 0.2,
+              "word": 2
+            }
+          ]
+        },
+        {
+          "text": "Nhìn đường đi đổi màu từ đầu tới cuối, đẹp như một bức tranh."
+        }
+      ]
+    },
+    {
+      "id": "8x8",
+      "header": {
+        "chip": "CẤP 4",
+        "title": "Cả bàn cờ 64 ô"
+      },
+      "board": {
+        "fen": "8/8/8/8/8/8/8/8 w - - 0 1"
+      },
+      "phrases": [
+        {
+          "text": "Và đây, cả bàn cờ 64 ô!",
+          "say": "Và đây, cả bàn cờ sáu mươi tư ô!",
+          "events": [
+            {
+              "type": "path",
+              "from": "a1",
+              "tour": [
+                8,
+                8
+              ],
+              "step": 0.12,
+              "thin": true,
+              "word": 2
+            }
+          ]
+        },
+        {
+          "text": "Bí quyết: luôn nhảy vào ô có ít đường ra nhất.",
+          "events": [
+            {
+              "type": "label",
+              "text": "Quy tắc Warnsdorff (1823)",
+              "word": 2
+            }
+          ]
+        },
+        {
+          "text": "Đó là quy tắc Warnsdorff. Đi vào chỗ khó trước, chỗ dễ để sau!",
+          "say": "Đó là quy tắc Vác-xơ-đoóc. Đi vào chỗ khó trước, chỗ dễ để sau!",
+          "events": [
+            {
+              "type": "sticker",
+              "text": "64/64 ✓",
+              "color": "green",
+              "word": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "layout": "outro",
+      "header": {
+        "chip": "THỬ THÁCH",
+        "title": "Bàn 6 × 6 nhé!"
+      },
+      "phrases": [
+        {
+          "text": "3 × 3 không thể. 3 × 4, 5 × 5 và 8 × 8 đều làm được.",
+          "say": "Ba nhân ba không thể. Ba nhân bốn, năm nhân năm và tám nhân tám đều làm được.",
+          "events": [
+            {
+              "type": "recap",
+              "index": 0,
+              "word": 0
+            },
+            {
+              "type": "recap",
+              "index": 1,
+              "word": 5
+            },
+            {
+              "type": "recap",
+              "index": 2,
+              "word": 13
+            }
+          ]
+        },
+        {
+          "text": "Đến lượt bạn: bàn 6 × 6, xuất phát ở ô nào cũng làm được! Bình luận đường đi của bạn nhé!",
+          "say": "Đến lượt bạn: bàn sáu nhân sáu, xuất phát ở ô nào cũng làm được! Bình luận đường đi của bạn nhé!",
+          "events": [
+            {
+              "type": "check",
+              "tour": [
+                6,
+                6
+              ]
+            },
+            {
+              "type": "endcard",
+              "word": 12
+            }
+          ]
+        },
+        {
+          "text": "Theo dõi Chess Empire để học cờ, học cách nghĩ!",
+          "say": "Theo dõi Chét Em-pai để học cờ, học cách nghĩ!"
+        }
+      ]
+    }
+  ],
+  "recap": [
+    "3 × 3: không thể\n(ô giữa không tới được)",
+    "3 × 4, 5 × 5: làm được",
+    "8 × 8: 64 ô\n(mẹo: ô ít lối ra đi trước)"
+  ]
+}

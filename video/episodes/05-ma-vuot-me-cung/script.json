@@ -1,0 +1,334 @@
+{
+  "title": "Mã ở biên là Mã buồn + mê cung dung nham",
+  "character": "coach",
+  "theme": "magic",
+  "music": "magic",
+  "hookPiece": "wN",
+  "voice": "vi-VN-NamMinhNeural",
+  "rate": "+8%",
+  "gap": 0.18,
+  "scenes": [
+    {
+      "id": "hook",
+      "layout": "hook",
+      "header": {
+        "chip": "THỬ THÁCH",
+        "title": "MÃ VƯỢT MÊ CUNG\nDUNG NHAM?!"
+      },
+      "phrases": [
+        {
+          "text": "Con Mã có vượt qua được mê cung dung nham không?",
+          "events": [
+            {
+              "type": "flash"
+            },
+            {
+              "type": "sticker",
+              "text": "🔥 MÊ CUNG 🔥",
+              "color": "red",
+              "word": 7
+            }
+          ]
+        },
+        {
+          "text": "Trước hết, cùng học 2 bí mật giúp Mã tìm đường nhé!",
+          "say": "Trước hết, cùng học hai bí mật giúp Mã tìm đường nhé!",
+          "events": [
+            {
+              "type": "magic",
+              "word": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "color",
+      "header": {
+        "chip": "BÍ MẬT 1/2",
+        "title": "Luôn đổi màu ô"
+      },
+      "board": {
+        "fen": "8/8/8/8/4N3/8/8/8 w - - 0 1"
+      },
+      "phrases": [
+        {
+          "text": "Mã đứng ở ô trắng, thì cả 8 ô nó nhảy tới đều là ô đen.",
+          "say": "Mã đứng ở ô trắng, thì cả tám ô nó nhảy tới đều là ô đen.",
+          "events": [
+            {
+              "type": "highlight",
+              "squares": [
+                "e4"
+              ],
+              "color": "gold",
+              "word": 4
+            },
+            {
+              "type": "dots",
+              "from": "e4",
+              "word": 8
+            }
+          ]
+        },
+        {
+          "text": "Nhảy sang ô đen, bước tiếp theo lại về ô trắng. Lần nào cũng đổi màu!",
+          "events": [
+            {
+              "type": "clear"
+            },
+            {
+              "type": "move",
+              "san": "Nf6",
+              "dur": 0.5
+            },
+            {
+              "type": "dots",
+              "from": "f6",
+              "word": 6
+            },
+            {
+              "type": "sticker",
+              "text": "TRẮNG ⇄ ĐEN",
+              "color": "purple",
+              "word": 12
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "edge",
+      "header": {
+        "chip": "BÍ MẬT 2/2",
+        "title": "Mã ở biên là Mã buồn"
+      },
+      "board": {
+        "fen": "8/8/8/8/8/8/8/8 w - - 0 1"
+      },
+      "phrases": [
+        {
+          "text": "Tô màu số ô Mã đi được: ở góc chỉ có 2 ô, ở mép 3 hoặc 4.",
+          "say": "Tô màu số ô Mã đi được: ở góc chỉ có hai ô, ở mép ba hoặc bốn.",
+          "events": [
+            {
+              "type": "heat",
+              "piece": "N",
+              "stagger": 0.02,
+              "word": 2
+            }
+          ]
+        },
+        {
+          "text": "Vào trung tâm: tới 8 ô. Mã ở biên là Mã buồn!",
+          "say": "Vào trung tâm: tới tám ô. Mã ở biên là Mã buồn!",
+          "events": [
+            {
+              "type": "highlight",
+              "squares": [
+                "c3",
+                "d3",
+                "e3",
+                "f3",
+                "c4",
+                "d4",
+                "e4",
+                "f4",
+                "c5",
+                "d5",
+                "e5",
+                "f5",
+                "c6",
+                "d6",
+                "e6",
+                "f6"
+              ],
+              "color": "gold",
+              "word": 2
+            },
+            {
+              "type": "sticker",
+              "text": "MÃ Ở BIÊN = MÃ BUỒN",
+              "color": "red",
+              "word": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "maze",
+      "header": {
+        "chip": "THỬ THÁCH",
+        "title": "Mê cung dung nham"
+      },
+      "board": {
+        "fen": "8/8/8/8/8/8/8/N7 w - - 0 1"
+      },
+      "phrases": [
+        {
+          "text": "Thử thách: đưa Mã tới kho báu!",
+          "events": [
+            {
+              "type": "maze",
+              "lava": [
+                "b3",
+                "d7",
+                "e4",
+                "e5",
+                "e6",
+                "e7",
+                "f2",
+                "f3",
+                "f4",
+                "f6",
+                "f7",
+                "h4"
+              ],
+              "goal": "h8",
+              "word": 4
+            }
+          ]
+        },
+        {
+          "text": "Mã được nhảy qua dung nham, nhưng không được đáp xuống."
+        },
+        {
+          "text": "Cần ít nhất mấy bước? Ba… hai… một!",
+          "say": "Cần ít nhất mấy bước? Ba. Hai. Một!",
+          "events": [
+            {
+              "type": "countdown",
+              "n": 3,
+              "word": 5
+            },
+            {
+              "type": "countdown",
+              "n": 2,
+              "word": 6
+            },
+            {
+              "type": "countdown",
+              "n": 1,
+              "word": 7
+            }
+          ]
+        },
+        {
+          "text": "Mẹo của kiện tướng: đánh số các ô theo số bước, loang dần như sóng nước.",
+          "events": [
+            {
+              "type": "flood",
+              "from": "a1",
+              "lava": [
+                "b3",
+                "d7",
+                "e4",
+                "e5",
+                "e6",
+                "e7",
+                "f2",
+                "f3",
+                "f4",
+                "f6",
+                "f7",
+                "h4"
+              ],
+              "step": 0.38,
+              "word": 4
+            }
+          ]
+        },
+        {
+          "text": "Kho báu ở số 10! Lần ngược lại là ra đường đi.",
+          "say": "Kho báu ở số mười! Lần ngược lại là ra đường đi.",
+          "events": [
+            {
+              "type": "sticker",
+              "text": "10 BƯỚC!",
+              "color": "gold",
+              "word": 4
+            }
+          ]
+        },
+        {
+          "text": "Nhảy theo từng con số… và lấy được kho báu rồi!",
+          "pause": 1.6,
+          "events": [
+            {
+              "type": "clear"
+            },
+            {
+              "type": "fen",
+              "fen": "8/8/8/8/8/8/8/8 w - - 0 1"
+            },
+            {
+              "type": "path",
+              "from": "a1",
+              "to": "h8",
+              "lava": [
+                "b3",
+                "d7",
+                "e4",
+                "e5",
+                "e6",
+                "e7",
+                "f2",
+                "f3",
+                "f4",
+                "f6",
+                "f7",
+                "h4"
+              ],
+              "step": 0.36
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "layout": "outro",
+      "header": {
+        "chip": "TÓM TẮT",
+        "title": "Mã tìm đường"
+      },
+      "phrases": [
+        {
+          "text": "Mã luôn đổi màu ô, ở biên thì yếu, và muốn tìm đường thì đánh số loang dần.",
+          "events": [
+            {
+              "type": "recap",
+              "index": 0,
+              "word": 2
+            },
+            {
+              "type": "recap",
+              "index": 1,
+              "word": 6
+            },
+            {
+              "type": "recap",
+              "index": 2,
+              "word": 12
+            }
+          ]
+        },
+        {
+          "text": "Kỳ sau: Mã đi hết bàn cờ, mỗi ô đúng một lần. Theo dõi Chess Empire nhé!",
+          "say": "Kỳ sau: Mã đi hết bàn cờ, mỗi ô đúng một lần. Theo dõi Chét Em-pai nhé!",
+          "events": [
+            {
+              "type": "endcard"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "recap": [
+    "Luôn đổi màu ô\n(trắng ⇄ đen)",
+    "Mã ở biên là Mã buồn\n(góc 2 ô, giữa 8 ô)",
+    "Đánh số để tìm đường\n(loang như sóng nước)"
+  ]
+}
