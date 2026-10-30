@@ -565,7 +565,8 @@ function renderAt(t) {
     capEl.style.opacity = k;
     capEl.style.transform = `translateY(${(1 - ease(k)) * 24}px)`;
     if (isHook) { capEl.style.left = '90px'; capEl.style.top = '1600px'; capEl.style.width = '900px'; capEl.style.textAlign = 'center'; capEl.style.fontSize = '50px'; }
-    else { capEl.style.left = '380px'; capEl.style.top = '1340px'; capEl.style.width = '580px'; capEl.style.textAlign = 'left'; capEl.style.fontSize = '44px'; }
+    else { capEl.style.left = '380px'; capEl.style.top = lab ? '1378px' : '1340px';   // nhường chỗ cho nhãn dưới bàn cờ
+      capEl.style.width = '580px'; capEl.style.textAlign = 'left'; capEl.style.fontSize = '44px'; }
     capEl.classList.toggle('nobubble', isHook);
   } else capEl.style.opacity = 0;
 }
