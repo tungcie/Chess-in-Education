@@ -47,6 +47,11 @@
                        border: 8px solid var(--gold); box-shadow: 0 0 50px rgba(242,194,48,.45); }
   #endcard .name { color: #fff; font-weight: 900; font-size: 56px; line-height: 1.1; }
   #endcard .sub { color: var(--gold2); font-weight: 600; font-size: 34px; margin-top: 6px; }
+  #equation { left: 0; width: 1080px; display: flex; justify-content: center; align-items: center; gap: 14px;
+              font-weight: 900; font-size: 64px; color: #fff; }
+  #equation .part { display: flex; align-items: center; gap: 4px; padding: 4px 20px 4px 8px; border-radius: 22px; }
+  #equation .op { color: var(--gold2); font-size: 58px; }
+  #equation svg { width: 76px; height: 76px; }
   #fx, #flash { pointer-events: none; }
   #flash { position: absolute; inset: 0; background: #fff; opacity: 0; }
   #ring { left: 10px; top: 350px; width: 1000px; height: 1000px; opacity: 0; }
@@ -81,6 +86,7 @@
   <div id="board" class="abs"></div>
   <canvas id="fx" width="1080" height="1920"></canvas>
   <div id="label" class="abs"></div>
+  <div id="equation" class="abs"></div>
   <div id="recap" class="abs"></div>
   <div id="endcard" class="abs">
     <img class="photo" src="../assets/coach-photo.png"><div class="avatar"></div>
@@ -207,6 +213,54 @@ function arrowSVG(from, to, color, k) {
     <line x1="${x1}" y1="${y1}" x2="${bx}" y2="${by}" stroke="rgb(${COL[color]})" stroke-width="${w}" stroke-linecap="round"/>
     <polygon points="${hx},${hy} ${bx + nx * 34},${by + ny * 34} ${bx - nx * 34},${by - ny * 34}" fill="rgb(${COL[color]})"/></g>`;
 }
+// Màu theo vòng: Xe một màu xanh dương cố định; Tượng đổi màu từ mép (xanh lá) vào trung tâm (đỏ).
+const ROOK_COL = '#3B6FE0', RING_COL = ['#22A866', '#E8B21E', '#F07A2A', '#E2283F'];
+function heatSVG(heats, t) {
+  let defs = '', s = '';
+  RING_COL.forEach((c, i) => {   // Hậu = phối màu Xe + màu Tượng của vòng đó
+    defs += `<linearGradient id="qg${i}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${ROOK_COL}"/><stop offset=".5" stop-color="${ROOK_COL}"/><stop offset=".5" stop-color="${c}"/><stop offset="1" stop-color="${c}"/></linearGradient>`;
+  });
+  s += `<defs>${defs}</defs>`;
+  // ô mới nhất của mỗi ô vuông thắng (sự kiện sau đè sự kiện trước)
+  const cell = {};
+  heats.forEach(o => { for (const [sq, c] of Object.entries(o.cells)) cell[sq] = { ...c, piece: o.piece, t0: o.t, stagger: o.stagger ?? .012 }; });
+  for (const [sq, c] of Object.entries(cell)) {
+    const [x, y] = sqXY(sq), f = sq.charCodeAt(0) - 97, r = +sq[1] - 1;
+    const k = back((t - c.t0 - (f + (7 - r)) * c.stagger) / .32);
+    if (k <= 0) continue;
+    const fill = c.piece === 'R' ? ROOK_COL : c.piece === 'B' ? RING_COL[c.ring] : `url(#qg${c.ring})`;
+    const glow = c.ring === 3 && c.piece !== 'R' ? `<rect x="${x + 2}" y="${y + 2}" width="${SQ - 4}" height="${SQ - 4}" rx="18" fill="none" stroke="#FFE38A" stroke-width="${4 + 3 * Math.sin(t * 6) ** 2}"/>` : '';
+    s += `<g transform="translate(${x + SQ / 2} ${y + SQ / 2}) scale(${k}) translate(${-x - SQ / 2} ${-y - SQ / 2})">
+      <rect x="${x + 6}" y="${y + 6}" width="${SQ - 12}" height="${SQ - 12}" rx="16" fill="${fill}" stroke="rgba(255,255,255,.55)" stroke-width="3"/>${glow}`;
+    if (c.piece === 'Q') {
+      s += `<text x="${x + SQ / 2}" y="${y + 38}" font-size="21" font-weight="800" text-anchor="middle" fill="rgba(255,255,255,.92)" font-family="BVP">${c.r}+${c.b}</text>
+            <text x="${x + SQ / 2}" y="${y + 84}" font-size="44" font-weight="900" text-anchor="middle" fill="#fff" font-family="BVP" style="paint-order:stroke" stroke="rgba(0,0,0,.25)" stroke-width="4">${c.n}</text>`;
+    } else {
+      s += `<text x="${x + SQ / 2}" y="${y + SQ / 2 + 17}" font-size="48" font-weight="900" text-anchor="middle" fill="#fff" font-family="BVP" style="paint-order:stroke" stroke="rgba(0,0,0,.25)" stroke-width="4">${c.n}</text>`;
+    }
+    s += '</g>';
+  }
+  return s;
+}
+// Phương trình  [Xe] 14 + [Tượng] 13 = [Hậu] 27  phía trên bàn cờ
+function equationHTML(o, t, prev) {
+  const icon = id => `<svg viewBox="0 0 45 45"><defs>${PIECES}</defs><use href="#${id}" width="45" height="45"/></svg>`;
+  // lần đầu: hiện lần lượt từng vế; các lần sau: chỉ nảy phần số thay đổi
+  const pop = (i) => {
+    if (prev && i === 0) return '';
+    const k = back((t - o.t - (prev ? (i - 1) * .15 : i * .25)) / .3);
+    return `opacity:${clamp(k)};transform:scale(${prev ? .85 + .15 * k : k})`;
+  };
+  const ringI = [7, 9, 11, 13].indexOf(o.b);
+  const parts = [
+    `<span class="part" style="background:${ROOK_COL};${pop(0)}">${icon('wR')}${o.a}</span>`,
+    `<span class="op" style="${pop(1)}">+</span>`,
+    `<span class="part" style="background:${RING_COL[Math.max(0, ringI)]};${pop(1)}">${icon('wB')}${o.b}</span>`,
+    `<span class="op" style="${pop(2)}">=</span>`,
+    `<span class="part" style="background:linear-gradient(135deg, ${ROOK_COL} 50%, ${RING_COL[Math.max(0, ringI)]} 50%);${pop(2)}">${icon('wQ')}${o.c}</span>`,
+  ];
+  return parts.join('');
+}
 function beamSVG(o, dt, layer) {
   const [fx, fy] = sqXY(o.from).map(v => v + SQ / 2);
   let s = '';
@@ -256,7 +310,7 @@ function boardSVG(t, scene) {
     } else { base = TL.positions[ev.pos]; lastMove = ev.moving[0]; }
   }
   const magic = TL.theme === 'magic';
-  const LIGHT = magic ? '#E9E1FA' : '#F1E2C2', DARK = magic ? '#7A66B8' : '#B58A55';
+  const LIGHT = TL.boardStyle.light || (magic ? '#E9E1FA' : '#F1E2C2'), DARK = TL.boardStyle.dark || (magic ? '#7A66B8' : '#B58A55');
   const frame = magic ? ['#8EF7FF', '#7B2FFF', '#FF5EC8'] : ['#FFE38A', '#C9921A', '#FFD54A'];
   let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-14 -14 ${BS + 28} ${BS + 28}" width="100%" height="100%">
     <defs>${PIECES}<linearGradient id="fr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${frame[0]}"/><stop offset=".5" stop-color="${frame[1]}"/><stop offset="1" stop-color="${frame[2]}"/></linearGradient>
@@ -277,6 +331,8 @@ function boardSVG(t, scene) {
     for (const sq of o.squares) { const [x, y] = sqXY(sq);
       s += `<rect x="${x + 4}" y="${y + 4}" width="${SQ - 8}" height="${SQ - 8}" rx="10" fill="rgba(${COL[o.color]},${pulse * k})" stroke="rgba(${COL[o.color]},${k})" stroke-width="6"/>`; }
   }
+  const heats = active.filter(o => o.type === 'heat');
+  if (heats.length) s += heatSVG(heats, t);
   for (const o of active) if (o.type === 'beam') s += beamSVG(o, t - o.t, 'line');
   // quân cờ
   for (const [sq, sym] of Object.entries(base)) {
@@ -356,6 +412,12 @@ function renderAt(t) {
   const lab = all.filter(o => o.type === 'label').pop();
   $('label').style.opacity = lab ? clamp((t - lab.t) / .3) : 0;
   if (lab) $('label').textContent = lab.text;
+
+  // phương trình
+  const eq = all.filter(o => o.type === 'equation').pop();
+  const eqEl = $('equation');
+  const eqs = all.filter(o => o.type === 'equation');
+  if (eq && !isHook) { eqEl.innerHTML = equationHTML(eq, t, eqs.length > 1); eqEl.style.opacity = 1; } else eqEl.style.opacity = 0;
 
   // sticker
   const st = active.filter(o => o.type === 'sticker').pop();
@@ -441,7 +503,8 @@ function magicFX(t, scene, isHook, boardVis, cx, cy, cw) {
     const dt = t - o.t;
     if (o.type === 'boom') {
       const [sx, sy] = sqXY(o.square);
-      burst(c, 60 + 14 * 900 / 928 + (sx + SQ / 2) * 900 / 928, 400 + (sy + SQ / 2 + 14) * 900 / 928, dt, 1.3, '255,94,120');
+      const bb = TL.boardBox || { x: 60, y: 400, size: 900 }, u = bb.size / 928;
+      burst(c, bb.x + (sx + SQ / 2 + 14) * u, bb.y + (sy + SQ / 2 + 14) * u, dt, 1.3, '255,94,120');
       if (dt >= 0 && dt < .45) { shake = Math.max(shake, 22 * (1 - dt / .45)); flash = Math.max(flash, .55 * (1 - dt / .25)); }
     }
     if (o.type === 'flash' && dt >= 0 && dt < .5) { shake = Math.max(shake, 26 * (1 - dt / .5)); flash = Math.max(flash, .9 * (1 - dt / .3)); }
@@ -461,6 +524,11 @@ function magicFX(t, scene, isHook, boardVis, cx, cy, cw) {
 
 window.setup = (timeline, pieces) => {
   TL = timeline; PIECES = pieces;
+  TL.boardStyle = TL.boardStyle || {};
+  const bb = TL.boardBox || { x: 60, y: 400, size: 900 };
+  Object.assign($('board').style, { left: bb.x + 'px', top: bb.y + 'px', width: bb.size + 'px', height: bb.size + 'px' });
+  $('label').style.top = (bb.y + bb.size + 14) + 'px'; $('label').style.left = bb.x + 'px';
+  $('equation').style.top = (bb.y - 104) + 'px';
   document.body.classList.toggle('magic', TL.theme === 'magic');
   const ec = TL.endcard || {};
   const isMon = TL.character === 'mon';

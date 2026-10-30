@@ -1,0 +1,427 @@
+{
+  "title": "Hậu = Xe + Tượng: phép cộng của quân mạnh nhất",
+  "character": "coach",
+  "theme": "gold",
+  "voice": "vi-VN-NamMinhNeural",
+  "rate": "+8%",
+  "gap": 0.18,
+  "boardBox": {
+    "x": 130,
+    "y": 470,
+    "size": 820
+  },
+  "boardStyle": {
+    "light": "#F6EEDC",
+    "dark": "#D8C7A3"
+  },
+  "scenes": [
+    {
+      "id": "hook",
+      "layout": "hook",
+      "header": {
+        "chip": "CHESS EMPIRE",
+        "title": "HẬU MẠNH NHẤT\nNHỜ… PHÉP CỘNG?"
+      },
+      "phrases": [
+        {
+          "text": "Vì sao Hậu là quân mạnh nhất bàn cờ?"
+        },
+        {
+          "text": "Câu trả lời nằm trong một phép cộng rất đơn giản!",
+          "events": [
+            {
+              "type": "sticker",
+              "text": "HẬU = ? + ?",
+              "color": "red",
+              "word": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook",
+      "header": {
+        "chip": "BƯỚC 1",
+        "title": "Xe: luôn là 14"
+      },
+      "board": {
+        "fen": "8/8/8/8/R7/8/8/8 w - - 0 1"
+      },
+      "phrases": [
+        {
+          "text": "Đặt một con Xe lên bàn cờ trống, rồi đếm số ô nó đi được.",
+          "events": [
+            {
+              "type": "dots",
+              "from": "a4",
+              "word": 7
+            }
+          ]
+        },
+        {
+          "text": "Ở mép bàn cờ: 14 ô. Vào trung tâm: vẫn 14 ô.",
+          "say": "Ở mép bàn cờ: mười bốn ô. Vào trung tâm: vẫn mười bốn ô.",
+          "events": [
+            {
+              "type": "clear",
+              "word": 5
+            },
+            {
+              "type": "move",
+              "san": "Rd4",
+              "word": 5
+            },
+            {
+              "type": "dots",
+              "from": "d4",
+              "word": 7
+            }
+          ]
+        },
+        {
+          "text": "Đứng ở đâu, Xe cũng có đúng 14 ô.",
+          "say": "Đứng ở đâu, Xe cũng có đúng mười bốn ô.",
+          "events": [
+            {
+              "type": "clear"
+            },
+            {
+              "type": "fen",
+              "fen": "8/8/8/8/8/8/8/8 w - - 0 1"
+            },
+            {
+              "type": "heat",
+              "piece": "R"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bishop",
+      "header": {
+        "chip": "BƯỚC 2",
+        "title": "Tượng: từ 7 lên 13"
+      },
+      "board": {
+        "fen": "8/8/8/8/8/8/8/B7 w - - 0 1"
+      },
+      "phrases": [
+        {
+          "text": "Tượng thì khác. Ở mép bàn cờ, Tượng chỉ có 7 ô.",
+          "say": "Tượng thì khác. Ở mép bàn cờ, Tượng chỉ có bảy ô.",
+          "events": [
+            {
+              "type": "dots",
+              "from": "a1",
+              "word": 4
+            }
+          ]
+        },
+        {
+          "text": "Đưa Tượng vào trung tâm: 13 ô, gần gấp đôi!",
+          "say": "Đưa Tượng vào trung tâm: mười ba ô, gần gấp đôi!",
+          "events": [
+            {
+              "type": "clear"
+            },
+            {
+              "type": "move",
+              "san": "Bd4"
+            },
+            {
+              "type": "dots",
+              "from": "d4",
+              "word": 4
+            }
+          ]
+        },
+        {
+          "text": "Tô màu cả bàn cờ: vòng ngoài 7, rồi 9, 11, và trung tâm 13.",
+          "say": "Tô màu cả bàn cờ: vòng ngoài bảy, rồi chín, mười một, và trung tâm mười ba.",
+          "events": [
+            {
+              "type": "clear"
+            },
+            {
+              "type": "fen",
+              "fen": "8/8/8/8/8/8/8/8 w - - 0 1"
+            },
+            {
+              "type": "heat",
+              "piece": "B",
+              "rings": [
+                0
+              ],
+              "word": 5
+            },
+            {
+              "type": "heat",
+              "piece": "B",
+              "rings": [
+                1
+              ],
+              "word": 8
+            },
+            {
+              "type": "heat",
+              "piece": "B",
+              "rings": [
+                2
+              ],
+              "word": 9
+            },
+            {
+              "type": "heat",
+              "piece": "B",
+              "rings": [
+                3
+              ],
+              "word": 13
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "queen",
+      "header": {
+        "chip": "BƯỚC 3",
+        "title": "Hậu = Xe + Tượng"
+      },
+      "board": {
+        "fen": "8/8/8/8/8/8/8/Q7 w - - 0 1"
+      },
+      "phrases": [
+        {
+          "text": "Hậu đi được như Xe, cộng thêm đi được như Tượng.",
+          "events": [
+            {
+              "type": "beam",
+              "from": "a1"
+            },
+            {
+              "type": "arrow",
+              "from": "a1",
+              "to": "h8",
+              "color": "red",
+              "word": 6
+            }
+          ]
+        },
+        {
+          "text": "Vậy số ô của Hậu chính là một phép cộng!",
+          "events": [
+            {
+              "type": "clear"
+            },
+            {
+              "type": "dots",
+              "from": "a1"
+            },
+            {
+              "type": "equation",
+              "a": 14,
+              "b": 7,
+              "c": 21,
+              "word": 2
+            }
+          ]
+        },
+        {
+          "text": "Ở mép: 14 cộng 7 bằng 21.",
+          "say": "Ở mép: mười bốn cộng bảy bằng hai mốt.",
+          "events": [
+            {
+              "type": "clear"
+            },
+            {
+              "type": "fen",
+              "fen": "8/8/8/8/8/8/8/8 w - - 0 1"
+            },
+            {
+              "type": "heat",
+              "piece": "Q",
+              "rings": [
+                0
+              ],
+              "word": 2
+            }
+          ]
+        },
+        {
+          "text": "Vào trong: 23, rồi 25.",
+          "say": "Vào trong: hai mươi ba, rồi hai mươi lăm.",
+          "events": [
+            {
+              "type": "equation",
+              "a": 14,
+              "b": 9,
+              "c": 23,
+              "word": 2
+            },
+            {
+              "type": "heat",
+              "piece": "Q",
+              "rings": [
+                1
+              ],
+              "word": 2
+            },
+            {
+              "type": "equation",
+              "a": 14,
+              "b": 11,
+              "c": 25,
+              "word": 6
+            },
+            {
+              "type": "heat",
+              "piece": "Q",
+              "rings": [
+                2
+              ],
+              "word": 6
+            }
+          ]
+        },
+        {
+          "text": "Và ở trung tâm: 14 cộng 13 bằng 27 ô!",
+          "say": "Và ở trung tâm: mười bốn cộng mười ba bằng hai mươi bảy ô!",
+          "events": [
+            {
+              "type": "equation",
+              "a": 14,
+              "b": 13,
+              "c": 27,
+              "word": 4
+            },
+            {
+              "type": "heat",
+              "piece": "Q",
+              "rings": [
+                3
+              ],
+              "word": 9
+            },
+            {
+              "type": "sticker",
+              "text": "27 Ô!",
+              "color": "red",
+              "word": 11
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "center",
+      "header": {
+        "chip": "BÀI HỌC",
+        "title": "Vì sao vào trung tâm?"
+      },
+      "phrases": [
+        {
+          "text": "Nhìn bảng màu là thấy: càng gần trung tâm, quân càng mạnh.",
+          "events": [
+            {
+              "type": "heat",
+              "piece": "Q",
+              "stagger": 0
+            },
+            {
+              "type": "equation",
+              "a": 14,
+              "b": 13,
+              "c": 27
+            },
+            {
+              "type": "highlight",
+              "squares": [
+                "d4",
+                "e4",
+                "d5",
+                "e5"
+              ],
+              "color": "gold",
+              "word": 7
+            }
+          ]
+        },
+        {
+          "text": "Hậu ở trung tâm mạnh hơn ở mép tới 6 ô.",
+          "say": "Hậu ở trung tâm mạnh hơn ở mép tới sáu ô."
+        },
+        {
+          "text": "Vì thế ta luôn đưa quân hướng về trung tâm.",
+          "events": [
+            {
+              "type": "label",
+              "text": "Mép 21 ô  →  Trung tâm 27 ô"
+            }
+          ]
+        },
+        {
+          "text": "Nhưng nhớ nhé: đừng đưa Hậu ra quá sớm, kẻo bị đối thủ đuổi chạy!",
+          "events": [
+            {
+              "type": "sticker",
+              "text": "ĐỪNG RA HẬU SỚM!",
+              "color": "red",
+              "word": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "layout": "outro",
+      "header": {
+        "chip": "TÓM TẮT",
+        "title": "Hậu = Xe + Tượng"
+      },
+      "phrases": [
+        {
+          "text": "Xe luôn 14 ô. Tượng từ 7 đến 13. Hậu là tổng: từ 21 đến 27.",
+          "say": "Xe luôn mười bốn ô. Tượng từ bảy đến mười ba. Hậu là tổng: từ hai mươi mốt đến hai mươi bảy.",
+          "events": [
+            {
+              "type": "clear"
+            },
+            {
+              "type": "recap",
+              "index": 0,
+              "word": 0
+            },
+            {
+              "type": "recap",
+              "index": 1,
+              "word": 4
+            },
+            {
+              "type": "recap",
+              "index": 2,
+              "word": 11
+            }
+          ]
+        },
+        {
+          "text": "Lưu bảng màu này lại và theo dõi Chess Empire để học cờ, học cách nghĩ nhé!",
+          "say": "Lưu bảng màu này lại và theo dõi Chét Em-pai để học cờ, học cách nghĩ nhé!",
+          "events": [
+            {
+              "type": "endcard"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "recap": [
+    "Xe: luôn 14 ô\n(ở đâu cũng vậy)",
+    "Tượng: 7 → 13 ô\n(càng vào giữa càng mạnh)",
+    "Hậu = Xe + Tượng\n21 → 27 ô"
+  ]
+}

@@ -35,6 +35,8 @@ Thiết lập chung ở đầu file:
 | `music` | `calm` / `magic` | Nhạc nền tự tổng hợp |
 | `voice`, `rate`, `pitch`, `formant` | `vi-VN-HoaiMyNeural`, `-2%`, `+30Hz`, `1.15` | Giọng đọc; `formant` > 1 làm giọng nghe như trẻ con |
 | `endcard` | `{ "name": "Bé Mon", ... }` | Chữ ở màn kết |
+| `boardBox` | `{ "x": 130, "y": 470, "size": 820 }` | Vị trí/kích thước bàn cờ (chừa chỗ cho phương trình phía trên) |
+| `boardStyle` | `{ "light": "#F6EEDC", "dark": "#D8C7A3" }` | Màu ô sáng/tối |
 
 Mỗi cảnh có thể đặt thế cờ ban đầu bằng `"board": { "fen": "..." }` (hoặc `{ "reset": true }` cho thế khai cuộc).
 
@@ -59,6 +61,8 @@ Mỗi cảnh có `header` (chip + tiêu đề) và danh sách `phrases`. Mỗi c
 | `flash` / `magic` | – | Chớp sáng + rung màn hình / tia lửa quanh tay nhân vật (chỉ `theme: magic`) |
 | `countdown` | `n` | Số đếm ngược lớn giữa màn hình |
 | `move` + `"boom": true` | | Nổ tung khi ăn quân |
+| `heat` | `piece` (R/B/Q), `rings[]`, `stagger` | Bản đồ số ô đi được trên bàn trống, tô màu theo vòng (Hậu = màu Xe phối màu Tượng) |
+| `equation` | `a`, `b`, `c` | Phương trình [Xe] a + [Tượng] b = [Hậu] c phía trên bàn cờ |
 | `clear` | – | Xoá tô ô / mũi tên / tem trong cảnh |
 | `recap`, `endcard` | `index` | Thẻ tóm tắt và màn kết (cảnh `layout: "outro"`) |
 

@@ -126,6 +126,19 @@ def music_bed(duration, style="calm"):
     return (out * fade * gain).astype(np.float32)
 
 
+def mobility(sym, sq):
+    """Số ô một quân đứng một mình đi được trên bàn cờ trống."""
+    b = chess.Board(None)
+    b.set_piece_at(sq, chess.Piece.from_symbol(sym))
+    return len(b.attacks(sq))
+
+
+def ring(sq):
+    """0 = mép bàn cờ … 3 = 4 ô trung tâm."""
+    f, r = chess.square_file(sq), chess.square_rank(sq)
+    return min(f, 7 - f, r, 7 - r)
+
+
 def board_map(board):
     return {chess.square_name(sq): p.symbol() for sq, p in board.piece_map().items()}
 
@@ -244,6 +257,12 @@ def main(ep_dir):
                         o["squares"] = [chess.square_name(s) for s in targets]
                         o["captures"] = [chess.square_name(s) for s in targets
                                          if board.piece_at(s) and board.piece_at(s).color != me]
+                    if o["type"] == "heat":
+                        # bản đồ số ô đi được; với Hậu lưu riêng phần Xe + phần Tượng
+                        rings = o.get("rings", [0, 1, 2, 3])
+                        o["cells"] = {chess.square_name(q): {"ring": ring(q), "n": mobility(o["piece"], q),
+                                                             "r": mobility("R", q), "b": mobility("B", q)}
+                                      for q in chess.SQUARES if ring(q) in rings}
                     if o["type"] == "beam":
                         o["rays"] = rays(o["from"], [(1, 0), (-1, 0), (0, 1), (0, -1)])
                     o["t"] = round(et, 3)
@@ -304,6 +323,8 @@ def main(ep_dir):
         "title": script["title"], "fps": FPS, "duration": round(total, 3),
         "character": script.get("character", "coach"), "theme": script.get("theme", "gold"),
         "endcard": script.get("endcard", {}),
+        "boardBox": script.get("boardBox", {"x": 60, "y": 400, "size": 900}),
+        "boardStyle": script.get("boardStyle", {}),
         "scenes": scenes, "captions": captions, "positions": positions,
         "boardEvents": board_events, "overlays": overlays, "recap": script.get("recap", []),
         "mouth": [round(float(m), 2) for m in mouth],
